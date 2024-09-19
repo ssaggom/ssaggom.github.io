@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AYUDA, DARZYEL</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: white;
+        }
+
+        h1 {
+            font-size: 120px; /* Tamaño de texto más grande */
+            color: black;
+            margin-top: 50px;
+        }
+
+        #boton-alarma {
+            margin-top: 100px;
+        }
+
+        #boton-alarma img {
+            width: 400px; /* Hacer el botón más grande */
+            height: 400px; /* Hacer el botón más grande */
+            cursor: pointer;
+        }
+
+        #contador {
+            margin-top: 20px;
+            font-size: 50px; /* Aumentar el tamaño del texto del contador */
+        }
+
+        @keyframes parpadeo {
+            0% { background-color: white; }
+            50% { background-color: red; }
+            100% { background-color: white; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>¡AYUDA, DARZYEL!</h1>
+
+    <div id="boton-alarma">
+        <img src="boton.png" alt="Botón de alarma" onclick="activarAlarma()">
+    </div>
+
+    <div id="contador"></div>
+
+    <audio id="sonido-alarma" src="alarma.mp3"></audio>
+
+    <script>
+        let botonActivo = true;
+        let tiempoEspera = 15 * 60 * 1000; // 15 minutos en milisegundos
+        let temporizador;
+
+        // Función para activar la alarma
+        function activarAlarma() {
+            if (botonActivo) {
+                // Reproducir sonido de alarma
+                document.getElementById('sonido-alarma').play();
+                
+                // Reiniciar la animación de parpadeo
+                reiniciarParpadeo();
+
+                // Desactivar el botón y comenzar cuenta atrás
+                botonActivo = false;
+                const tiempoFin = new Date().getTime() + tiempoEspera;
+                localStorage.setItem('tiempoFin', tiempoFin);
+                comenzarCuentaAtras(tiempoFin);
+            } else {
+                alert("¡Aún no puedes preguntarle a Darzyel!");
+            }
+        }
+
+        // Función para reiniciar la animación de parpadeo
+        function reiniciarParpadeo() {
+            document.body.style.animation = "none"; // Eliminar animación
+            setTimeout(function() {
+                document.body.style.animation = "parpadeo 1s ease-in-out 5"; // Volver a agregar la animación
+            }, 10); // Esperar un pequeño intervalo de tiempo para reiniciarla
+        }
+
+        // Función para comenzar la cuenta atrás
+        function comenzarCuentaAtras(tiempoFin) {
+            temporizador = setInterval(function() {
+                const tiempoRestante = tiempoFin - new Date().getTime();
+
+                if (tiempoRestante <= 0) {
+                    clearInterval(temporizador);
+                    document.getElementById("contador").innerHTML = "";
+                    botonActivo = true;  // Reactivar botón
+                    localStorage.removeItem('tiempoFin');
+                } else {
+                    let minutos = Math.floor(tiempoRestante / (60 * 1000));
+                    let segundos = Math.floor((tiempoRestante % (60 * 1000)) / 1000);
+                    document.getElementById("contador").innerHTML = `Tiempo restante: ${minutos}m ${segundos}s`;
+                }
+            }, 1000);
+        }
+
+        // Al cargar la página, verificar si hay un temporizador activo
+        window.onload = function() {
+            const tiempoFin = localStorage.getItem('tiempoFin');
+            if (tiempoFin) {
+                const tiempoRestante = tiempoFin - new Date().getTime();
+                if (tiempoRestante > 0) {
+                    botonActivo = false;
+                    comenzarCuentaAtras(tiempoFin);
+                }
+            }
+        }
+
+        // Reiniciar el temporizador al presionar la tecla "R"
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'r' || event.key === 'R') {
+                resetearTemporizador();
+            }
+        });
+
+        // Función para resetear el temporizador
+        function resetearTemporizador() {
+            clearInterval(temporizador);  // Detener cualquier temporizador activo
+            localStorage.removeItem('tiempoFin');  // Eliminar el tiempo almacenado
+            document.getElementById("contador").innerHTML = "";  // Limpiar el contador
+            botonActivo = true;  // Reactivar el botón
+        }
+
+        // Mantener el contador incluso cuando la página está en segundo plano
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible' && !botonActivo) {
+                const tiempoFin = localStorage.getItem('tiempoFin');
+                if (tiempoFin) {
+                    comenzarCuentaAtras(tiempoFin);
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>
