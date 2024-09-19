@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Proporcionalidad</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        #reglaDeTres {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        #reglaDeTres input {
+            margin: 10px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: 60px;
+            transition: all 0.3s ease;
+        }
+
+        #reglaDeTres input:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0,123,255,0.2);
+        }
+
+        #reglaDeTres button {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #reglaDeTres button:hover {
+            background-color: #0056b3;
+        }
+
+        .resaltado {
+            font-weight: bold;
+            background-color: #ffff99;
+        }
+
+        #mensajeError {
+            color: #ff0000;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Proporcionalidad</h2>
+        <div id="reglaDeTres">
+            <input type="text" id="inputA" placeholder="W">
+            <input type="text" id="inputB" placeholder="X">
+            <input type="text" id="inputC" placeholder="Y">
+            <input type="text" id="inputD" placeholder="Z">
+            <div>
+                <button onclick="calcular()">Calcular</button>
+                <button onclick="resetear()">Resetear</button>
+            </div>
+            <div id="mensajeError"></div>
+        </div>
+    </div>
+
+    <script>
+        function calcular() {
+            let a = parseFloat(document.getElementById('inputA').value);
+            let b = parseFloat(document.getElementById('inputB').value);
+            let c = parseFloat(document.getElementById('inputC').value);
+            let d = parseFloat(document.getElementById('inputD').value);
+
+            let camposVacios = [isNaN(a), isNaN(b), isNaN(c), isNaN(d)].filter(v => v).length;
+
+            if (camposVacios > 1) {
+                document.getElementById('mensajeError').innerText = 'Por favor, llena tres de los campos para calcular el cuarto.';
+                return;
+            }
+
+            document.getElementById('mensajeError').innerText = ''; // Limpiar mensaje de error
+
+            if (isNaN(a)) {
+                a = (b * d) / c;
+                document.getElementById('inputA').value = a.toFixed(2);
+                resaltarCampo('inputA');
+            } else if (isNaN(b)) {
+                b = (a * d) / c;
+                document.getElementById('inputB').value = b.toFixed(2);
+                resaltarCampo('inputB');
+            } else if (isNaN(c)) {
+                c = (a * b) / d;
+                document.getElementById('inputC').value = c.toFixed(2);
+                resaltarCampo('inputC');
+            } else if (isNaN(d)) {
+                d = (c * b) / a;
+                document.getElementById('inputD').value = d.toFixed(2);
+                resaltarCampo('inputD');
+            }
+        }
+
+        function resaltarCampo(campoId) {
+            document.getElementById(campoId).classList.add('resaltado');
+        }
+
+        function resetear() {
+            document.getElementById('inputA').value = '';
+            document.getElementById('inputB').value = '';
+            document.getElementById('inputC').value = '';
+            document.getElementById('inputD').value = '';
+            document.getElementById('inputA').classList.remove('resaltado');
+            document.getElementById('inputB').classList.remove('resaltado');
+            document.getElementById('inputC').classList.remove('resaltado');
+            document.getElementById('inputD').classList.remove('resaltado');
+            document.getElementById('mensajeError').innerText = ''; // Limpiar mensaje de error
+        }
+    </script>
+</body>
+</html>
