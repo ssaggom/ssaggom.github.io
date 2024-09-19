@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decodificador 🕵🏻</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+<style>
+  .codificar-button {
+  padding: 12px 24px; /* Aumenta el relleno para hacerlo más grande */
+  font-size: 26px; /* Aumenta el tamaño de fuente si es necesario */
+  /* Agrega cualquier otro estilo que desees cambiar, como bordes, colores, etc. */
+}
+  button:not(.copy-icon) {
+  margin-top: 20px; /* Ajusta este valor según lo necesites */
+}
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f5f5f5;
+  }
+  h1 {
+    color: #333;
+    margin-bottom: 20px;
+  }
+  .container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 1000px; /* Aumentado el ancho máximo */
+    gap: 20px;
+  }
+  .text-area-container {
+    width: 100%; /* Ocupa el 100% del ancho del contenedor padre */
+    padding: 0 10px; /* Espacio a los lados */
+  }
+  textarea {
+    width: calc(100% - 20px); /* 100% del contenedor padre menos el padding */
+    height: 200px;
+    margin-bottom: 10px; /* Espacio para el botón de copiar */
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 16px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  .codificar-button i {
+  margin-right: 8px; /* Ajusta este valor según necesites */
+}
+  .copy-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px; /* Reducido el tamaño del icono */
+    color: #4CAF50;
+    border: none;
+    cursor: pointer;
+    padding: 8px 12px; /* Reducido el padding */
+    margin-top: -54px; /* Ajuste para alinear con la caja de texto */
+    margin-left: auto; /* Alinea el botón a la derecha */
+    background: #f5f5f5;
+  }
+  .version-container {
+    text-align: center;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: #fff;
+    border: 2px solid #cbd5e0;
+    border-radius: 15px;
+    width: fit-content;
+  }
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.3s ease;
+    width: auto; /* Ajuste para que no sean tan anchos */
+  }
+  button:hover {
+    background-color: #45a049;
+  }
+  .clear-button {
+  background-color: #b4e3b4; /* Un verde claro y suave */
+}
+
+.clear-button:hover {
+  background-color: #9fd29f; /* Un poco más oscuro para el efecto hover */
+}
+</style>
+</head>
+<body>
+
+<h1>Decodificador 🕵🏻</h1>
+
+<div class="container">
+  <div class="text-area-container">
+    <textarea id="base64" placeholder="Texto codificado"></textarea>
+    <button class="copy-icon" onclick="copiarTexto('base64')"><i class="far fa-clipboard"></i></button>
+  </div>
+  <div class="text-area-container">
+    <textarea id="texto" placeholder="Texto sin codificar"></textarea>
+    <button class="copy-icon" onclick="copiarTexto('texto')"><i class="far fa-clipboard"></i></button>
+  </div>
+</div>
+<button class="codificar-button" onclick="codificarDecodificar()">
+  <i class="fas fa-sync-alt"></i> Codificar/Decodificar
+</button>
+<div>
+  <input type="radio" id="utf8" name="encoding" value="utf8" checked>
+  <label for="utf8">UTF-8</label>
+  <input type="radio" id="iso88591" name="encoding" value="iso88591">
+  <label for="iso88591">ISO-8859-1</label>
+</div>
+<button class="clear-button" onclick="borrarTextos()">Borrar todo</button>
+
+<script>
+  // Determina la codificación seleccionada
+  function getSelectedEncoding() {
+    if (document.getElementById('utf8').checked) {
+      return 'utf-8';
+    } else {
+      return 'iso-8859-1';
+    }
+  }
+  
+  function strToBase64(str, encoding) {
+    if (encoding === 'utf-8') {
+      return btoa(unescape(encodeURIComponent(str)));
+    } else {
+      // ISO-8859-1 encoding
+      const bytes = new Uint8Array(str.length);
+      for (let i = 0; i < str.length; i++) {
+        bytes[i] = str.charCodeAt(i) & 0xFF;
+      }
+      const latin1String = String.fromCharCode.apply(null, bytes);
+      return btoa(latin1String);
+    }
+  }
+  
+  function base64ToStr(b64, encoding) {
+    const binaryString = atob(b64);
+  
+    if (encoding === 'utf-8') {
+      try {
+        return decodeURIComponent(binaryString.split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+      } catch (e) {
+        console.error('Error en la decodificación:', e);
+        return "Error en la decodificación. Verifique que el texto codificado esté en formato Base64 válido.";
+      }
+    } else {
+      // ISO-8859-1 decoding
+      let str = '';
+      for (let i = 0; i < binaryString.length; i++) {
+        str += String.fromCharCode(binaryString.charCodeAt(i) & 0xFF);
+      }
+      return str;
+    }
+  }
+  
+  function codificarDecodificar() {
+    const base64 = document.getElementById('base64');
+    const texto = document.getElementById('texto');
+    const encoding = getSelectedEncoding();
+  
+    if (texto.value !== '') {
+      base64.value = strToBase64(texto.value, encoding);
+    } else if (base64.value !== '') {
+      texto.value = base64ToStr(base64.value, encoding);
+    }
+  }
+
+
+function borrarTextos() {
+  document.getElementById('base64').value = '';
+  document.getElementById('texto').value = '';
+}
+
+function copiarTexto(elementId) {
+  var texto = document.getElementById(elementId);
+  texto.select();
+  texto.setSelectionRange(0, 99999);
+  document.execCommand("copy");
+}
+  </script>
+
+<div class="version-container">
+  Versión 1.0
+</div>
+</body>
+</html>

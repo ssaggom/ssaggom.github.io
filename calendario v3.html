@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calend-o-matic</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        #form-container {
+            text-align: center;
+            padding-top: 20px;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin: 20px;
+            border-radius: 8px;
+        }
+        select, input[type="number"] {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            padding: 20px;
+            background-color: white;
+            width: 100%;
+            height: calc(100vh - 40px);
+            box-sizing: border-box;
+        }
+        .day, .day-name {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
+        .invalid-day {
+            background-color: #f0f0f0;
+        }
+        .day {
+            align-items: flex-start;
+            justify-content: flex-end;
+            padding-top: 10px;
+            padding-right: 10px;
+            min-height: 150px;
+            font-size: 35px;
+        }
+        .day-name {
+            font-weight: bold;
+            background-color: #dcdcdc;
+            font-size: 30px;
+            min-height: 25px;
+        }
+        .weekend {
+            background-color: #f8f8f8;
+        }
+        #calendar-title {
+            grid-column: span 7;
+            text-align: center;
+            font-size: 36px;
+            padding: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        #download-icon {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 30px;
+            cursor: pointer;
+        }
+        /* Estilos para modo pastel */
+        .pastel .day {
+            background-color: #ffe4e1;
+            border-color: #ffcccb;
+        }
+        .pastel .day-name {
+            background-color: #ffb6c1;
+        }
+        .pastel .weekend {
+            background-color: #ffd1dc;
+        }
+        .pastel .invalid-day {
+            background-color: #faf0e6;
+        }
+        /* Estilos para modo neón */
+        .neon .day {
+            background-color: #ccffcc; /* Verde suave */
+            border-color: #99ff99;
+        }
+        .neon .day-name {
+            background-color: #b3ffb3; /* Verde más claro */
+        }
+        .neon .weekend {
+            background-color: #99ffcc; /* Verde agua */
+        }
+        .neon .invalid-day {
+            background-color: #e6ffe6; /* Verde muy claro */
+        }
+        @media print {
+            body, page {
+                margin: 0;
+                box-shadow: none;
+                background: #fff;
+                -webkit-print-color-adjust: exact;
+            }
+            #calendar {
+                width: 297mm;
+                height: 420mm;
+                grid-template-columns: repeat(7, 1fr);
+            }
+            .day, .day-name {
+                border: 1px solid #ddd;
+                min-height: 60mm;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; margin-top: 20px;">Calend-o-matic 📆</h1>
+    <div id="form-container">
+        <select id="month">
+            <option value="1">Enero</option>
+            <option value="2">Febrero</option>
+            <option value="3">Marzo</option>
+            <option value="4">Abril</option>
+            <option value="5">Mayo</option>
+            <option value="6">Junio</option>
+            <option value="7">Julio</option>
+            <option value="8">Agosto</option>
+            <option value="9">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
+        </select>
+        <input type="number" id="year" placeholder="Año" min="1900" max="2100">
+        <select id="color-mode">
+            <option value="default">Modo fotocopiable</option>
+            <option value="pastel">Modo pastel</option>
+            <option value="neon">Modo neón</option>
+        </select>
+        <button onclick="generateCalendar()">Generar</button>
+    </div>
+    <div id="calendar"></div>
+    <i id="download-icon" class="fas fa-download" style="display: none;" onclick="downloadCalendar()"></i>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.3.2/html2canvas.min.js"></script>
+    <script>
+        function generateCalendar() {
+            document.querySelector('h1').style.display = 'none';
+            document.getElementById('form-container').style.display = 'none';
+
+            const year = document.getElementById('year').value;
+            const monthIndex = document.getElementById('month').value - 1;
+            const monthName = document.getElementById('month').options[monthIndex].text;
+            const colorMode = document.getElementById('color-mode').value;
+
+            document.body.className = colorMode;  // Aplicar la clase del modo de color
+
+            const firstDay = new Date(year, monthIndex, 1);
+            const lastDay = new Date(year, monthIndex + 1, 0).getDate();
+
+            const calendarDiv = document.getElementById('calendar');
+            calendarDiv.innerHTML = '';
+
+            const title = document.createElement('div');
+            title.id = 'calendar-title';
+            title.textContent = `${monthName} de ${year}`;
+            calendarDiv.appendChild(title);
+
+            const dayNames = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+            dayNames.forEach(name => {
+                const dayNameDiv = document.createElement('div');
+                dayNameDiv.classList.add('day-name');
+                dayNameDiv.textContent = name;
+                calendarDiv.appendChild(dayNameDiv);
+            });
+
+            const startDay = (firstDay.getDay() + 6) % 7;
+
+            for (let i = 0; i < startDay; i++) {
+                const emptyDiv = document.createElement('div');
+                emptyDiv.classList.add('day', 'invalid-day');
+                calendarDiv.appendChild(emptyDiv);
+            }
+
+            for (let i = 1; i <= lastDay; i++) {
+                const dayDiv = document.createElement('div');
+                dayDiv.classList.add('day');
+                dayDiv.textContent = i;
+
+                if (new Date(year, monthIndex, i).getDay() === 0 || new Date(year, monthIndex, i).getDay() === 6) {
+                    dayDiv.classList.add('weekend');
+                }
+
+                calendarDiv.appendChild(dayDiv);
+            }
+
+            document.getElementById('download-icon').style.display = 'block';
+        }
+
+        function downloadCalendar() {
+            const calendarDiv = document.getElementById('calendar');
+            html2canvas(calendarDiv, { scale: 2, ignoreElements: (element) => element.id === 'download-icon' }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `${document.getElementById('month').options[document.getElementById('month').value - 1].text}-${document.getElementById('year').value}-calendario.png`;
+                link.href = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>

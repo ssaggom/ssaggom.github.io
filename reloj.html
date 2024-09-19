@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reloj Escolar</title>
+    <style>
+        .versionStyle {
+    margin: 20px auto; /* Centra el div y añade un margen superior e inferior */
+    padding: 10px 20px; /* Añade algo de espacio dentro del div */
+    border-radius: 15px; /* Hace que los bordes sean redondeados */
+    background-color: #9E9E9E; /* Color de fondo */
+    color: white; /* Color del texto */
+    font-size: 10px; /* Tamaño del texto */
+    width: fit-content; /* Ajusta el ancho al contenido */
+}
+
+.refreshButton {
+    background-color: #9E9E9E; /* Gris para diferenciar del verde de los otros botones */
+    color: white;
+    padding: 10px 10px;
+    font-size: 10px;
+    border: none;
+    border-radius: 15px;
+    cursor: pointer;
+    margin-top: 10px; /* Ajusta según necesidad */
+}
+
+.refreshButton:hover {
+    background-color: #8E8E8E; /* Un tono más oscuro para el efecto hover */
+}
+        body.dayMode {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #f2f2f2;
+            color: #333;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        body.nightMode {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #333;
+            color: #f2f2f2;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        form {
+            display: inline-block;
+            text-align: left;
+        }
+
+        label {
+            margin-right: 20px;
+        }
+
+        input[type="submit"], input[type="time"] {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        input[type="submit"]:hover, input[type="time"]:hover {
+            background-color: #45a049;
+        }
+
+        #clockContainer {
+            display: none; /* Ocultar inicialmente */
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        #clock {
+            font-size: 100px;
+        }
+        
+        #maxTime {
+            font-size: 25px; /* Ajusta este valor según tus preferencias */
+        }
+
+        #remainingTime {
+            font-size: 25px; /* Ajusta este valor según tus preferencias */
+        }
+
+        #maxTime, #timeLeft {
+            color: inherit;
+        }
+
+        #timeLeft {
+            font-weight: bold;
+        }
+
+        #motivationalQuoteContainer {
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        #motivationalQuote {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        #modeToggle {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        select, input[type="time"] {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+select:hover, input[type="time"]:hover {
+    background-color: #45a049;
+}
+
+input[type="submit"] {
+    margin: 0 auto; /* Centra el botón */
+    display: block; /* Cambia el botón a bloque para permitir el centrado automático */
+}
+
+    </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+</head>
+<body class="dayMode">
+    <div id="hourSelection" class="container">
+        <h1>Selecciona la hora:</h1>        
+        <form id="hourForm">
+            <select id="hourSelect" name="hour">
+                <option value="8:55">1ª hora</option>
+                <option value="9:50">2ª hora</option>
+                <option value="10:45">3ª hora</option>
+                <option value="11:15">3ª hora + recreo</option>
+                <option value="12:10">4ª hora</option>
+                <option value="13:05">5ª hora</option>
+                <option value="14:00">6ª hora</option>
+                <option value="custom">Tiempo personalizado</option>
+            </select>
+            <input type="time" id="customHourInput" name="customHour" style="display: none;"><br><br>
+            <input type="submit" value="Mostrar Reloj">
+            <div id="versionContainer" class="versionStyle">Versión 2.0</div>
+            </form>
+            </div>
+            <div id="clockContainer">
+            <h1 id="clock">--:--</h1>
+            <p id="maxTime">Hora máxima: <span id="maxHour">XX:XX</span></p>
+            <p id="remainingTime">Tiempo restante: <span id="timeLeft">--:--</span></p>
+            <div id="extensionButtons" style="display: none; text-align: center; margin-top: 20px;">
+                <button onclick="extendTime(2)">+2 Minutos</button>
+                <button onclick="extendTime(5)">+5 Minutos</button>
+                <button onclick="extendTime(10)">+10 Minutos</button>
+                <p id="addedTimeMessage" style="margin-top: 10px;"></p>                
+            </div>
+            <div id="motivationalQuoteContainer">
+            <p id="motivationalQuote">Cargando cita motivacional...</p>
+            </div>
+            <button onclick="refreshPage()" class="refreshButton"><i class="fas fa-sync-alt"></i> Atrás</button>
+            </div>
+
+            <div id="modeToggle">🌞</div>
+            <script>
+                var totalTimeAdded = 0; // Al inicio del script
+                var maxTime = new Date();
+
+                document.getElementById('hourForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    var selectedHour = document.getElementById('hourSelect').value;
+    if (selectedHour === "custom") {
+        selectedHour = document.getElementById('customHourInput').value;
+        if (!selectedHour) {
+            alert("Por favor, introduce una hora válida para el tiempo personalizado.");
+            return;
+        }
+    }
+    hideHourSelection();
+    showClock(selectedHour);
+});
+
+document.getElementById('hourSelect').addEventListener('change', function() {
+    if (this.value === "custom") {
+        document.getElementById('customHourInput').style.display = 'inline-block';
+    } else {
+        document.getElementById('customHourInput').style.display = 'none';
+    }
+});
+
+    Array.from(document.querySelectorAll('input[name="hour"]')).forEach(function(input) {
+        if (input.value !== "custom") {
+            input.addEventListener('change', function() {
+                document.getElementById('customHourInput').style.display = 'none';
+            });
+        }
+    });
+
+    document.getElementById('modeToggle').addEventListener('click', function() {
+        var body = document.body;
+        var modeToggle = document.getElementById('modeToggle');
+        if (body.classList.contains('dayMode')) {
+            body.classList.replace('dayMode', 'nightMode');
+            modeToggle.textContent = '🌛';
+        } else {
+            body.classList.replace('nightMode', 'dayMode');
+            modeToggle.textContent = '🌞';
+        }
+    });
+
+    function hideHourSelection() {
+        document.getElementById('hourSelection').style.display = 'none';
+        document.getElementById('versionContainer').style.display = 'none';
+    }
+
+    function showClock(selectedHour) {
+    document.getElementById('clockContainer').style.display = 'block';
+    var splitTime = selectedHour.split(':');
+    maxTime.setHours(parseInt(splitTime[0]), parseInt(splitTime[1]), 0, 0);
+
+    // Asegúrate de actualizar el texto de maxHour aquí
+    document.getElementById('maxHour').textContent = selectedHour;
+
+    updateTime();
+
+        var quoteUpdateInterval = setInterval(function() {
+            updateTime(maxTime, quoteUpdateInterval);
+        }, 1000);
+    }
+
+    function updateTime() {
+    var currentTime = new Date();
+    var timeLeft = maxTime - currentTime;
+
+    var minutes = Math.floor(Math.abs(timeLeft) / (1000 * 60));
+    var seconds = Math.floor((Math.abs(timeLeft) % (1000 * 60)) / 1000);
+    document.getElementById('timeLeft').textContent = (timeLeft < 0 ? "-" : "") + pad(minutes) + ':' + pad(seconds);
+
+    var hours = pad(currentTime.getHours());
+    var minutes = pad(currentTime.getMinutes());
+    document.getElementById('clock').textContent = hours + ':' + minutes;
+
+    if (timeLeft <= 0) {
+        // Si el tiempo ha expirado, muestra los botones de extensión.
+        document.getElementById('extensionButtons').style.display = 'block';
+
+        // Si aún no se ha mostrado la cita de Jovellanos, muéstrala.
+        if (document.getElementById('motivationalQuote').textContent !== "Sólo falta el tiempo a quien no sabe aprovecharlo. - Gaspar Melchor de Jovellanos") {
+            document.getElementById('motivationalQuote').textContent = "Sólo falta el tiempo a quien no sabe aprovecharlo. - Gaspar Melchor de Jovellanos";
+            document.getElementById('motivationalQuoteContainer').style.display = 'block';
+        }
+    } else if (timeLeft > 0 && currentTime.getSeconds() % 60 === 0) {
+        // Mientras el contador no sea negativo, actualiza las citas cada minuto
+        changeMotivationalQuote();
+    }
+}
+
+    function pad(num) {
+        return num.toString().padStart(2, '0');
+    }
+
+    function changeMotivationalQuote() {
+        var quotes = [
+            "La educación es el arma más poderosa que puedes usar para cambiar el mundo. - Nelson Mandela",
+            "El aprendizaje es un tesoro que seguirá a su dueño en todas partes. - Proverbio chino",
+            "La mente que se abre a una nueva idea jamás volverá a su tamaño original. - Albert Einstein",
+            "La educación es el pasaporte para el futuro, porque el mañana pertenece a aquellos que se preparan para él hoy. - Malcolm X",
+            "El conocimiento es poder. - Francis Bacon",
+            "La verdadera educación consiste en obtener lo mejor de uno mismo. - Mahatma Gandhi",
+            "El aprendizaje es un proceso donde el conocimiento es construido por medio de experiencias. - Peter Senge",
+            "La educación no es la preparación para la vida; la educación es la vida en sí misma. - John Dewey",
+        ];
+
+        var randomIndex = Math.floor(Math.random() * quotes.length);
+var selectedQuote = quotes[randomIndex];
+document.getElementById('motivationalQuote').textContent = selectedQuote;
+document.getElementById('motivationalQuoteContainer').style.display = 'block';
+}
+    // Cambiar la cita motivacional inicialmente al cargar la página
+    window.onload = function() {
+        changeMotivationalQuote();
+        // Inicialmente establecer el modo según la hora del día
+        var currentHour = new Date().getHours();
+        var modeToggle = document.getElementById('modeToggle');
+        if (currentHour >= 7 && currentHour < 19) {
+            if (!document.body.classList.contains('dayMode')) {
+                modeToggle.click();
+            }
+        } else {
+            if (!document.body.classList.contains('nightMode')) {
+                modeToggle.click();
+            }
+        }
+    };
+    function extendTime(minutesToAdd) {
+    maxTime.setMinutes(maxTime.getMinutes() + minutesToAdd);
+    totalTimeAdded += minutesToAdd; // Añade los minutos a la cuenta total
+    updateTime(); // Actualiza el tiempo con el nuevo maxTime
+    document.getElementById('maxHour').textContent = maxTime.getHours().toString().padStart(2, '0') + ':' + maxTime.getMinutes().toString().padStart(2, '0');
+    // Actualiza el mensaje con el total de minutos añadidos
+    document.getElementById('addedTimeMessage').textContent = "Se han añadido " + totalTimeAdded + " minutos a la hora final";
+}
+
+function refreshPage() {
+    window.location.reload();
+}
+</script>
+</body>
+</html>

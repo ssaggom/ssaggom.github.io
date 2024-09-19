@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control de Clase</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+        color: #333;
+    }
+    h1 {
+        background-color: #4CAF50;
+        color: white;
+        text-align: center;
+        padding: 20px 0;
+        margin: 0;
+        font-size: 1.8em;
+    }
+form {
+    padding: 0; /* Elimina el padding para que los elementos hijos puedan expandirse completamente */
+    text-align: center;
+}
+form input, form button, button {
+    padding: 15px 20px;
+    margin-top: 10px;
+    width: 100%; /* Establece el ancho al 100% */
+    border: none;
+    border-radius: 0px;
+    font-size: 1em;
+}
+  
+      .version-container {
+        text-align: center;
+        margin: 20px auto;
+        padding: 10px;
+        background-color: #fff;
+        border: 2px solid #cbd5e0;
+        border-radius: 15px;
+        width: fit-content;
+    }
+  
+.codify-container {
+    text-align: center;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.1); /* Ajusta la opacidad con el último valor */
+    border: 2px solid #cbd5e0;
+    border-radius: 15px;
+    width: fit-content;
+}
+  
+    form button, button {
+        background-color: #4CAF50;
+        color: white;
+        cursor: pointer;
+          width: 100%; /* Esto hará que tomen todo el ancho disponible */
+    max-width: none; /* Elimina cualquier límite máximo que haya */
+    }
+    form button:hover, button:hover {
+        background-color: #45a049;
+    }
+    form input {
+        border: 1px solid #ddd;
+          width: 100%; /* Esto hará que tomen todo el ancho disponible */
+    max-width: none; /* Elimina cualquier límite máximo que haya */
+        margin-bottom: 0; /* Align input with button */
+    }
+    ul {
+        list-style-type: none;
+        padding: 0;
+    }
+    li {
+        background: white;
+        border-bottom: 1px solid #ddd;
+        padding: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        transition: background-color 0.3s;
+    }
+    li.yellow {
+        background-color: #fff8e1;
+    }
+    li.red {
+        background-color: #ffebee;
+    }
+    .student-info {
+        display: flex;
+        align-items: center;
+        flex-grow: 1;
+    }
+    .student-name {
+        margin-right: 10px;
+    }
+    .timer-span {
+        font-weight: bold;
+    }
+    .close-btn {
+        font-size: 1.5em;
+        color: #f44336;
+        cursor: pointer;
+        transition: color 0.3s;
+    }
+    .close-btn:hover {
+        color: #b71c1c;
+    }
+    #generateReport, #sendReport, #clearCache {
+        background-color: #2196F3;
+        color: white;
+    }
+    #generateReport:hover, #sendReport:hover, #clearCache:hover {
+        background-color: #1e88e5;
+    }
+    @media (max-width: 600px) {
+        h1 {
+            font-size: 1.5em;
+        }
+    }
+</style>
+</head>
+<body>
+    <h1>Desterrados 🏝️</h1>
+    <form id="addStudentForm">
+        <input type="text" id="studentName" placeholder="Nombre del Alumno" required>
+        <button type="submit"><i class="fa fa-plus"></i> Añadir Alumno</button>
+    </form>
+    <ul id="studentList"></ul>
+    <button id="generateReport"><i class="fa fa-file-alt"></i> Generar Informe</button>
+    <button id="sendReport"><i class="fa fa-envelope"></i> Enviar Informe por Gmail</button>
+    <button id="clearCache"><i class="fa fa-refresh"></i> Limpiar caché</button>
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('addStudentForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const studentName = document.getElementById('studentName').value.trim();
+        if (studentName) {
+            addStudent(studentName);
+            document.getElementById('studentName').value = '';
+        }
+    });
+
+    const studentList = document.getElementById('studentList');
+    let students = {};
+    let removedStudents = {};
+
+    function addStudent(name) {
+        const li = document.createElement('li');
+        li.innerHTML = `<i class="fa fa-user-graduate"></i> <span class="student-name">${name}</span>`;
+        const timerSpan = document.createElement('span');
+        timerSpan.classList.add('timer-span');
+        const closeButton = document.createElement('span');
+        closeButton.innerHTML = '<i class="fa fa-times close-btn"></i>';
+        closeButton.addEventListener('click', function(event) {
+            event.stopPropagation(); // Prevents the li click event from firing when the close button is clicked
+            closeStudent(name);
+        });
+        li.appendChild(timerSpan);
+        li.appendChild(closeButton);
+        li.addEventListener('click', function() {
+            handleStudentClick(name);
+        });
+        studentList.appendChild(li);
+        const now = new Date();
+        students[name] = {
+            status: 'none',
+            timer: null,
+            secondsOut: 0,
+            timerSpan: timerSpan,
+            expulsionReason: '',
+            element: li,
+            yellowTime: null,
+            redTime: null
+        };
+    }
+
+    function closeStudent(name) {
+        const student = students[name];
+        clearInterval(student.timer);
+        student.element.remove();
+        removedStudents[name] = { ...student }; // Store removed student data for report
+        delete students[name];
+    }
+
+    function handleStudentClick(name) {
+        const student = students[name];
+        const now = new Date();
+        if (student.status === 'none') {
+            student.status = 'yellow';
+            student.element.classList.add('yellow');
+            student.yellowTime = now;
+            updateTimerDisplay(student);
+        } else if (student.status === 'yellow') {
+            student.status = 'red';
+            student.element.classList.remove('yellow');
+            student.element.classList.add('red');
+            student.redTime = now;
+            if (!student.timer) {
+                startTimer(student);
+            }
+            const reason = prompt('Indica el motivo de la expulsión (opcional):');
+            student.expulsionReason = reason;
+            updateTimerDisplay(student);
+        }
+    }
+
+    function startTimer(student) {
+        updateTimerDisplay(student);
+        student.timer = setInterval(() => {
+            student.secondsOut++;
+            updateTimerDisplay(student);
+        }, 1000);
+    }
+
+    function updateTimerDisplay(student) {
+        const minutes = Math.floor(student.secondsOut / 60);
+        const seconds = student.secondsOut % 60;
+        student.timerSpan.textContent = `- Fuera: ${minutes} minuto(s) ${seconds < 10 ? '0' : ''}${seconds} segundo(s)`;
+        if (student.expulsionReason) {
+            student.timerSpan.textContent += ` (Motivo: ${student.expulsionReason})`;
+        }
+    }
+
+    document.getElementById('generateReport').addEventListener('click', function() {
+        const group = prompt("Por favor, introduce el grupo:");
+        const now = new Date();
+        const report = `Grupo: ${group}\nFecha: ${now.toLocaleDateString('es-ES', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'})}\n\n` + dumpReport(true);
+        const encodeCheckbox = document.getElementById('encode');
+        if (encodeCheckbox.checked) {
+            navigator.clipboard.writeText(btoa(unescape(encodeURIComponent(report))));
+        } else {
+            navigator.clipboard.writeText(report);
+        }
+    });
+
+    document.getElementById('sendReport').addEventListener('click', function() {
+        const group = prompt("Por favor, introduce el grupo para el asunto del correo:");
+        const now = new Date();
+        const formattedDate = now.toLocaleDateString('es-ES', {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'});
+        const report = `Grupo: ${group}\nFecha: ${formattedDate}\n\n` + dumpReport(true);
+        const subject = `Informe Desterrados, ${group} (${formattedDate})`;
+        const body = document.getElementById('encode').checked ? btoa(unescape(encodeURIComponent(report))) : report;
+        const mailtoLink = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        
+        // Intentar abrir la app de Gmail si es un dispositivo móvil, si no, abrir Gmail en el navegador
+        if (navigator.userAgent.match(/mobile/i)) {
+            window.location.href = mailtoLink;
+        } else {
+            window.open(`https://mail.google.com/mail/?view=cm&fs=1&tf=1&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+        }
+    });
+
+    document.getElementById('clearCache').addEventListener('click', function() {
+        if (confirm('¿Estás seguro de que quieres limpiar la caché y eliminar todos los registros actuales?')) {
+            studentList.innerHTML = ''; // Clear the list in the UI
+            students = {}; // Reset the students object
+            removedStudents = {}; // Reset the removed students object
+        }
+    });
+
+    function dumpReport(includeRemoved = false) {
+        const allStudents = { ...students, ...(includeRemoved ? removedStudents : {}) };
+        return Object.keys(allStudents).map(name => {
+            const { status, secondsOut, expulsionReason, yellowTime, redTime } = allStudents[name];
+            const minutes = Math.floor(secondsOut / 60);
+            const seconds = secondsOut % 60;
+            let detail = `${name}: `;
+            detail += status === 'yellow' ? `advertencia (a las ${yellowTime ? yellowTime.toLocaleTimeString() : 'N/A'})` :
+                `advertencia (a las ${yellowTime ? yellowTime.toLocaleTimeString() : 'N/A'}) - expulsión (a las ${redTime ? redTime.toLocaleTimeString() : 'N/A'})`;
+            detail += `\nMotivo: ${expulsionReason || "No especificado"}`;
+            detail += `\nTiempo fuera: ${minutes} minutos, ${seconds} segundos.\n`;
+            return detail;
+        }).join('\n');
+    }
+});
+
+
+          </script>
+     <div class="codify-container">
+  <label for="encode"><i class="fa fa-lock"></i> Codificar</label>
+  <input type="checkbox" id="encode" name="encode"></center>
+</div>
+ 
+  <div class="version-container">
+    Versión 0.5
+</div>
+</body>
+</html>

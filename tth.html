@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tic Tac History</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f3f3f3;
+    margin: 0;
+    padding: 0;
+  }
+  .container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+  h1 {
+    color: #333;
+    font-size: 36px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .board {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-gap: 10px;
+    margin: 20px auto;
+    width: 300px;
+  }
+  .cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100px;
+    height: 100px;
+    background-color: lightgray;
+    cursor: pointer;
+    font-size: 24px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+  .cell:hover {
+    background-color: #ddd;
+  }
+  .progress-container {
+    width: 300px;
+    margin: 20px auto;
+    text-align: center;
+    background-color: #eee;
+    border-radius: 10px;
+    padding: 5px;
+  }
+  .progress-bar {
+    width: 0%;
+    height: 20px;
+    background-color: red;
+    border-radius: 10px;
+    transition: width 1s linear;
+  }
+  .question-container {
+    margin-top: 20px;
+    font-size: 20px;
+    text-align: left;
+    padding: 10px;
+    background-color: #eee;
+    border-radius: 10px;
+  }
+  .answer-container {
+    margin-top: 20px;
+    font-size: 20px;
+    text-align: left;
+    padding: 10px;
+    background-color: #eee;
+    border-radius: 10px;
+    display: none;
+  }
+  button {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #45a049;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Tic Tac History</h1>
+  <div class="board">
+    <div class="cell" onclick="handleClick(this)"></div>
+    <div class="cell" onclick="handleClick(this)"></div>
+    <div class="cell" onclick="handleClick(this)"></div>
+    <div class="cell" onclick="handleClick(this)"></div>
+    <div class="cell" onclick="handleClick(this)"></div>
+    <div class="cell" onclick="handleClick(this)"></div>
+    <div class="cell" onclick="handleClick(this)"></div>
+    <div class="cell" onclick="handleClick(this)"></div>
+    <div class="cell" onclick="handleClick(this)"></div>
+  </div>
+  
+  <div class="progress-container">
+    <div class="progress-bar"></div>
+  </div>
+  
+  <div class="question-container"></div>
+  <div class="answer-container"></div>
+  
+  <button onclick="startTimer()">Tiempo</button>
+  <button onclick="stopTimer()">Stop</button>
+  <button onclick="showSolution()">Solución</button>
+</div>
+
+<script>
+let timerInterval;
+let timerRunning = false;
+
+const preguntas = [
+{ pregunta: "¡SORPRESA! Elimina una X. Después, juega el siguiente equipo.", respuesta: "¡Uno menos!" },
+{ pregunta: "¿Qué obtuvo Alemania a cambio de reconocer el protectorado hispanofrancés en Marruecos?", respuesta: "Parte del Camerún francés" },
+{ pregunta: "¡SORPRESA! Los equipos intercambian uno de sus jugadores. Pasa tu turno.", respuesta: "Ooops…" },
+{ pregunta: "¿Qué batalla se produjo buscando aislar a Turquía?", respuesta: "La batalla de Gallipoli" },
+{ pregunta: "¿Qué tres potencias conformaron la Entente de los Tres Emperadores?", respuesta: "Alemania, Austria-Hungría y Rusia" },
+{ pregunta: "El temor entre países ocasionó una carrera… ¿de qué tipo?", respuesta: "Armamentística" },
+{ pregunta: "¿En qué año se manifestó el emperador alemán a favor de la independencia marroquí?", respuesta: "1905" },
+{ pregunta: "¿Por qué dimitió Bismarck?", respuesta: "Por la política de Guillermo II" },
+{ pregunta: "¿Qué dos potencias querían sacar provecho del desmoronamiento del Imperio otomano?", respuesta: "Austria y Rusia" },
+{ pregunta: "¡SORPRESA! Los equipos pasan a manejar el símbolo contrario. Se mantienen X y O en sus sitios.", respuesta: "Ooops…" },
+{ pregunta: "¿En qué año se celebró la Conferencia de Algeciras?", respuesta: "1906" },
+{ pregunta: "En el comienzo de la guerra, ¿quién rompió la Triple Alianza?", respuesta: "Italia" },
+{ pregunta: "¿A quién quería aislar Bismarck al establecer sus pactos y alianzas?", respuesta: "A Francia" },
+{ pregunta: "¡SORPRESA! Los equipos pasan a manejar el símbolo contrario. Se mantienen X y O en sus sitios.", respuesta: "Ooops…" },
+{ pregunta: "¿Qué tres potencias conformaron la Triple Alianza?", respuesta: "Alemania, Austria e Italia" },
+{ pregunta: "¿En qué año acabó la guerra de trincheras?", respuesta: "1916" },
+{ pregunta: "¡SORPRESA! Elimina una X. Después, juega el siguiente equipo.", respuesta: "¡Uno menos!" },
+{ pregunta: "¿Qué sentimiento provocó en Francia la pérdida de Alsacia y Lorena?", respuesta: "Ganas de revancha" },
+{ pregunta: "¡SORPRESA! Los equipos intercambian uno de sus jugadores. Pasa tu turno.", respuesta: "Ooops…" },
+{ pregunta: "¡SORPRESA! Elimina una O. Después, juega el siguiente equipo.", respuesta: "¡Uno menos!" },
+{ pregunta: "¿Cómo fue el ultimátum que le propuso Austria a Serbia tras el asesinato del archiduque?", respuesta: "Le exigía que le permitiese investigar el crimen" },
+{ pregunta: "¡SORPRESA! Dibuja una casilla más en cualquier extremo y coloca X en ella. Pasa tu turno.", respuesta: "¡Política expansionista!" },
+{ pregunta: "¡SORPRESA! Dibuja una casilla más en cualquier extremo y coloca X en ella. Pasa tu turno.", respuesta: "¡Política expansionista!" },
+{ pregunta: "La Triple Entente también era conocida con otro nombre. ¿Cuál?", respuesta: "Aliados" },
+{ pregunta: "¿Qué país salió reforzado de la Conferencia de Algeciras?", respuesta: "Francia" },
+{ pregunta: "¡SORPRESA! Los equipos intercambian uno de sus jugadores. Pasa tu turno.", respuesta: "Ooops…" },
+{ pregunta: "¿Qué otro nombre recibe la guerra de trincheras?", respuesta: "Guerra de posiciones" },
+{ pregunta: "¿En qué año finalizó la I Guerra Mundial?", respuesta: "1918" },
+{ pregunta: "¿En qué año se creó la Triple Entente?", respuesta: "1907" },
+{ pregunta: "¿En qué año se produjo la batalla de Gallipoli?", respuesta: "En 1915" },
+{ pregunta: "¿Quiénes conformaron los Imperios Centrales?", respuesta: "Alemania y Austria-Hungría" },
+{ pregunta: "¿En que mes de 1914 sucedió la batalla del Marne?", respuesta: "En septiembre" },
+{ pregunta: "¡SORPRESA! Los equipos intercambian uno de sus jugadores. Pasa tu turno.", respuesta: "Ooops…" },
+{ pregunta: "Tras el atentado contra el archiduque, ¿a qué dos potencias declaró la guerra Alemania?", respuesta: "A Rusia y a Francia" },
+{ pregunta: "¡SORPRESA! Elimina una O. Después, juega el siguiente equipo.", respuesta: "¡Uno menos!" },
+{ pregunta: "¿Qué suceso intentarán aprovechar Austria y Rusia para ganar poder en los Balcanes?", respuesta: "El desmoronamiento del Imperio otomano" },
+{ pregunta: "¡SORPRESA! Elimina una X. Después, juega el siguiente equipo.", respuesta: "¡Uno menos!" },
+{ pregunta: "¿En qué año se produjo la batalla de Verdún?", respuesta: "En 1916" },
+{ pregunta: "¿En qué año comenzó la I Guerra Mundial?", respuesta: "1914" },
+{ pregunta: "Tras el atentado contra el archiduque, ¿a quién apoyó Rusia?", respuesta: "A Serbia" },
+{ pregunta: "¿Para qué quería Alemania formar un imperio colonial?", respuesta: "Para impulsar su industria" },
+{ pregunta: "¿En qué año se produjo el asesinato del archiduque Francisco Fernando y su mujer?", respuesta: "1914" },
+{ pregunta: "¿Qué nombre recibió el plan alemán para conseguir una rápida victoria sobre Francia?", respuesta: "Plan Schlieffen" },
+{ pregunta: "¿En qué año sucedió la batalla del Marne?", respuesta: "En 1914" },
+{ pregunta: "¿Qué objetivos tenía la política expansionista de Guillermo II?", respuesta: "Buscar nuevos mercados y crear una poderosa marina" },
+{ pregunta: "¿En qué año comenzó la Guerra de movimientos?", respuesta: "1914" },
+{ pregunta: "¿Por qué le daba miedo a Reino Unido que Alemania quisiese un imperio colonial?", respuesta: "Era una amenaza en las colonias" },
+{ pregunta: "Tras el atentado contra el archiduque, ¿a qué potencia declaró la guerra Reino Unido?", respuesta: "A Alemania" },
+{ pregunta: "¡SORPRESA! Dibuja una casilla más en cualquier extremo y coloca O en ella. Pasa tu turno.", respuesta: "¡Política expansionista!" },
+{ pregunta: "¿En qué año se creó la Triple Alianza?", respuesta: "1882" },
+{ pregunta: "¿Qué sucedió cuando, tras el atentado, Serbia rechazó el ultimátum de Austria?", respuesta: "El Imperio austrohúngaro declaró la guerra a Serbia" },
+{ pregunta: "¡SORPRESA! Los equipos pasan a manejar el símbolo contrario. Se mantienen X y O en sus sitios.", respuesta: "Ooops…" },
+{ pregunta: "¡SORPRESA! Los dos estrategas se cambian por alguien de su propio equipo. Pasa tu turno.", respuesta: "Ooops…" },
+{ pregunta: "¿Qué potencia apoyaba a Serbia y Bulgaria para que no cayeran bajo poder Austriaco?", respuesta: "Rusia" },
+{ pregunta: "¡SORPRESA! Los equipos pasan a manejar el símbolo contrario. Se mantienen X y O en sus sitios.", respuesta: "Ooops…" },
+{ pregunta: "¡SORPRESA! Dibuja una casilla más en cualquier extremo y coloca X en ella. Pasa tu turno.", respuesta: "¡Política expansionista!" },
+{ pregunta: "¿En qué año se produjo la pérdida francesa de Alsacia y Lorena?", respuesta: "En 1870" },
+{ pregunta: "¿En que año comenzó la Paz Armada?", respuesta: "1890" },
+{ pregunta: "¿De qué nacionalidad era la persona que mató a Francisco Fernando y su mujer?", respuesta: "Bosnio" },
+{ pregunta: "¿Qué era La Mano Negra?", respuesta: "Una organización pro Serbia" },
+{ pregunta: "¡SORPRESA! Elimina una O. Después, juega el siguiente equipo.", respuesta: "¡Uno menos!" },
+{ pregunta: "¡SORPRESA! Elimina una X. Después, juega el siguiente equipo.", respuesta: "¡Uno menos!" },
+{ pregunta: "¡SORPRESA! Los dos estrategas se cambian por alguien de su propio equipo. Pasa tu turno.", respuesta: "Ooops…" },
+{ pregunta: "¿Qué dos imperios se disputaban el control económico y político de los Balcanes?", respuesta: "Austrohúngaro y ruso" },
+{ pregunta: "¿Qué dos potencias participaron en el protectorado impuesto en Marruecos?", respuesta: "Francia y España" },
+{ pregunta: "¿Qué dos potencias conformaron la Dúplice Alianza?", respuesta: "Alemania y Austria-Hungría" },
+{ pregunta: "¿Cómo rompió Italia la Triple Alianza a comienzos de la guerra?", respuesta: "No apoyando a Austria ni Alemania" },
+{ pregunta: "¿Qué tres potencias conformaron la Triple Entente?", respuesta: "Francia, Rusia y Reino Unido" },
+{ pregunta: "¡SORPRESA! Dibuja una casilla más en cualquier extremo y coloca O en ella. Pasa tu turno.", respuesta: "¡Política expansionista!" },
+{ pregunta: "¿En qué año se estabilizaron los frentes bélicos?", respuesta: "En 1915" },
+{ pregunta: "¡SORPRESA! Dibuja una casilla más en cualquier extremo y coloca O en ella. Pasa tu turno.", respuesta: "¡Política expansionista!" },
+{ pregunta: "¡SORPRESA! Elimina una O. Después, juega el siguiente equipo.", respuesta: "¡Uno menos!" },
+{ pregunta: "¿En qué mes sucedió el asesinato del archiduque Francisco Fernando y su mujer?", respuesta: "Junio" },
+{ pregunta: "¡SORPRESA! Dibuja una casilla más en cualquier extremo y coloca O en ella. Pasa tu turno.", respuesta: "¡Política expansionista!" },
+{ pregunta: "¿Cuáles eran los dos Estados con mayor desarrollo industrial en este momento?", respuesta: "Alemania y Reino Unido" },
+{ pregunta: "¿En qué año se produjo la batalla del Somme?", respuesta: "En 1916" },
+{ pregunta: "¿Por qué guerra perdió Francia los territorios de Alsacia y Lorena?", respuesta: "La guerra franco-prusiana" },
+{ pregunta: "¿En qué año comenzó la guerra de trincheras?", respuesta: "1915" },
+{ pregunta: "¿En que año terminó la Paz Armada?", respuesta: "1914" },
+{ pregunta: "¡SORPRESA! Dibuja una casilla más en cualquier extremo y coloca X en ella. Pasa tu turno.", respuesta: "¡Política expansionista!" },
+
+
+
+  // Añade el resto de las preguntas aquí
+];
+
+function getRandomNumber() {
+  return Math.floor(Math.random() * 80) + 1;
+}
+
+function handleClick(cell) {
+  const questionContainer = document.querySelector('.question-container');
+  const answerContainer = document.querySelector('.answer-container');
+  
+  if (!cell.innerText) {
+    cell.innerText = getRandomNumber();
+  } else {
+    const questionNumber = parseInt(cell.innerText);
+    if (!isNaN(questionNumber)) {
+      if (cell.classList.contains('selected')) {
+        cell.innerText = '';
+        questionContainer.textContent = '';
+        answerContainer.textContent = '';
+        cell.classList.remove('selected');
+      } else {
+        questionContainer.textContent = preguntas[questionNumber - 1].pregunta;
+        answerContainer.textContent = '';
+        cell.classList.add('selected');
+      }
+    }
+  }
+}
+
+function showSolution() {
+  const answerContainer = document.querySelector('.answer-container');
+  const questionContainer = document.querySelector('.question-container');
+  if (questionContainer.textContent !== '') {
+    const selectedCell = document.querySelector('.selected');
+    if (selectedCell) {
+      answerContainer.textContent = preguntas[parseInt(selectedCell.innerText) - 1].respuesta;
+      answerContainer.style.display = 'block';
+    }
+  }
+}
+
+function startTimer() {
+  if (!timerRunning) {
+    const progressBar = document.querySelector('.progress-bar');
+    let width = 0;
+    progressBar.style.width = '0%';
+
+    timerInterval = setInterval(() => {
+      width += 1;
+      progressBar.style.width = `${width}%`;
+      if (width >= 100) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+      }
+    }, 600); // Incrementa la barra cada 600ms (1 minuto)
+
+    timerRunning = true;
+  }
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  const progressBar = document.querySelector('.progress-bar');
+  progressBar.style.width = '0%';
+  timerRunning = false;
+}
+</script>
+
+</body>
+</html>

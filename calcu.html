@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculadora 🧮</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            min-height: 100vh;
+        }
+
+        .calculator-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .container {
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 10px;
+            width: 300px; /* Establece un ancho fijo para las calculadoras de las columnas */
+        }
+
+        .calculator-basic-container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        label {
+            margin: 10px 0;
+            color: #666;
+            display: block;
+            text-align: left;
+        }
+
+        input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .left button {
+            background-color: #5cb85c;
+            color: white;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .right button {
+            background-color: #007bff;
+            color: white;
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #resultados p, #mensajeError {
+            color: #333;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .resaltado {
+            background-color: #ffff99;
+        }
+
+        .calculator-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .calculator-btn {
+            width: 22%;
+            margin: 5px 1%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+        }
+
+        .calculator-screen {
+            width: 100%;
+            background-color: #ebebeb;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 10px;
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        h1 {
+    color: #1a202c;
+    text-align: center;
+  }
+    </style>
+</head>
+<body>
+
+    <h1>Calculadora 🧮</h1>
+    <div class="calculator-row">
+        <div class="container left">
+            <h2>Calculadora de Porcentajes</h2>
+
+            <label for="totalAlumnos">Total de Alumnos:</label>
+            <input type="number" id="totalAlumnos" required>
+
+            <label for="aprobados">Alumnos Aprobados:</label>
+            <input type="number" id="aprobados" required>
+
+            <label for="suspendidos">Alumnos Suspendidos:</label>
+            <input type="number" id="suspendidos" required>
+
+            <button onclick="calcularPorcentajes()">Calcular</button>
+
+            <div id="resultados">
+                <p id="porcentajeAprobados"></p>
+                <p id="porcentajeSuspendidos"></p>
+            </div>
+        </div>
+        <div class="container right">
+            <h2>Proporcionalidad</h2>
+            <div id="reglaDeTres">
+                <input type="text" id="inputA" placeholder="W">
+                <input type="text" id="inputB" placeholder="X">
+                <input type="text" id="inputC" placeholder="Y">
+                <input type="text" id="inputD" placeholder="Z">
+                <div>
+                    <button onclick="calcular()">Calcular</button>
+                    <button onclick="resetear()">Resetear</button>
+                </div>
+                <div id="mensajeError"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calcularPorcentajes() {
+            var totalAlumnos = parseInt(document.getElementById('totalAlumnos').value);
+            var aprobados = parseInt(document.getElementById('aprobados').value);
+            var suspendidos = parseInt(document.getElementById('suspendidos').value);
+
+            if (aprobados + suspendidos !== totalAlumnos) {
+                alert('El total de aprobados y suspendidos debe ser igual al total de alumnos.');
+                return;
+            }
+
+            var porcentajeAprobados = (aprobados / totalAlumnos * 100).toFixed(1);
+            var porcentajeSuspendidos = (suspendidos / totalAlumnos * 100).toFixed(1);
+            document.getElementById('porcentajeAprobados').innerText = 'Porcentaje Aprobados: ' + porcentajeAprobados + '%';
+        document.getElementById('porcentajeSuspendidos').innerText = 'Porcentaje Suspendidos: ' + porcentajeSuspendidos + '%';
+    }
+
+    function calcular() {
+        let a = parseFloat(document.getElementById('inputA').value);
+        let b = parseFloat(document.getElementById('inputB').value);
+        let c = parseFloat(document.getElementById('inputC').value);
+        let d = parseFloat(document.getElementById('inputD').value);
+
+        let camposVacios = [isNaN(a), isNaN(b), isNaN(c), isNaN(d)].filter(v => v).length;
+
+        if (camposVacios > 1) {
+            document.getElementById('mensajeError').innerText = 'Por favor, llena tres de los campos para calcular el cuarto.';
+            return;
+        }
+
+        document.getElementById('mensajeError').innerText = ''; // Limpiar mensaje de error
+
+        if (isNaN(a)) {
+            a = (b * d) / c;
+            document.getElementById('inputA').value = a.toFixed(2);
+            resaltarCampo('inputA');
+        } else if (isNaN(b)) {
+            b = (a * d) / c;
+            document.getElementById('inputB').value = b.toFixed(2);
+            resaltarCampo('inputB');
+        } else if (isNaN(c)) {
+            c = (a * b) / d;
+            document.getElementById('inputC').value = c.toFixed(2);
+            resaltarCampo('inputC');
+        } else if (isNaN(d)) {
+            d = (c * b) / a;
+            document.getElementById('inputD').value = d.toFixed(2);
+            resaltarCampo('inputD');
+        }
+    }
+
+    function resaltarCampo(campoId) {
+        document.getElementById(campoId).classList.add('resaltado');
+    }
+
+    function resetear() {
+        document.getElementById('inputA').value = '';
+        document.getElementById('inputB').value = '';
+        document.getElementById('inputC').value = '';
+        document.getElementById('inputD').value = '';
+        document.getElementById('inputA').classList.remove('resaltado');
+        document.getElementById('inputB').classList.remove('resaltado');
+        document.getElementById('inputC').classList.remove('resaltado');
+        document.getElementById('inputD').classList.remove('resaltado');
+        document.getElementById('mensajeError').innerText = ''; // Limpiar mensaje de error
+    }
+    let currentInput = '';
+        let previousInput = '';
+        let operation = '';
+
+        function pressKey(key) {
+            if (key === '=') {
+                if (currentInput && previousInput && operation) {
+                    calculate();
+                    return;
+                }
+            } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+                operation = key;
+                previousInput = currentInput;
+                currentInput = '';
+            } else {
+                currentInput += key;
+            }
+            updateScreen();
+        }
+
+        function calculate() {
+            let result;
+            switch (operation) {
+                case '+':
+                    result = parseFloat(previousInput) + parseFloat(currentInput);
+                    break;
+                case '-':
+                    result = parseFloat(previousInput) - parseFloat(currentInput);
+                    break;
+                case '*':
+                    result = parseFloat(previousInput) * parseFloat(currentInput);
+                    break;
+                case '/':
+                    result = parseFloat(previousInput) / parseFloat(currentInput);
+                    break;
+                default:
+                    return;
+            }
+            currentInput = result.toString();
+            operation = '';
+            previousInput = '';
+            updateScreen();
+        }
+
+        function updateScreen() {
+            document.getElementById('calculatorScreen').textContent = currentInput || '0';
+        }
+
+        function clearScreen() {
+            currentInput = '';
+            previousInput = '';
+            operation = '';
+            updateScreen();
+        }
+    </script>
+</body>
+</html>

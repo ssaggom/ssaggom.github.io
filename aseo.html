@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bañómetro</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 20px;
+    background-color: #f0f2f5;
+    color: #333;
+  }
+  h1 {
+    color: #1a202c;
+    text-align: center;
+  }
+  .students-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+  .row {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Sombra más pronunciada para resaltar cada área */
+  padding: 20px; /* Más espacio interior para claridad */
+  margin: 20px 10px; /* Más espacio entre áreas de estudiantes */
+  width: calc(30% - 40px); /* Ajuste del ancho para compensar el aumento del margen */
+  position: relative; /* Para posicionar correctamente los encabezados */
+}
+
+.row:nth-child(odd) {
+  background-color: #f0f8ff; /* Color claro para filas impares */
+}
+
+.row:nth-child(even) {
+  background-color: #cfcfe1; /* Color alternativo para filas pares */
+}
+
+.student-header {
+  font-size: 16px; /* Tamaño de fuente para los encabezados */
+  font-weight: bold; /* Texto en negrita para los encabezados */
+  margin-bottom: 15px; /* Espacio después del encabezado */
+  text-align: center; /* Centrar el texto del encabezado */
+}
+  .timer {
+  width: 99%; /* Ajusta el ancho del temporizador */
+  margin: 0 auto; /* Establece los márgenes izquierdo y derecho a auto para centrar */
+  margin-bottom: 5px; /* Mantiene el margen inferior */
+}
+  .other-reasons-input {
+    width: 100%; /* Ajusta el ancho al contenedor padre */
+    margin-bottom: 5px;
+  }
+  .name-input {
+    font-size: 18px; /* Tamaño de fuente más grande */
+  border-radius: 5px; /* Bordes más redondeados */
+  padding-left: 30px; /* Espacio para el icono */
+  padding-top: 5px;
+  background-color: #d1d3f9; /* Cambia #e6e6e6 por el color de fondo que prefieras */
+  border: none;
+  width: 100%;
+  margin-bottom: 10px;
+}
+  .other-reasons-input {
+    display: none; /* Inicialmente oculto */
+    margin-top: 5px;
+  }
+  .timer {
+    text-align: center;
+    background-color: #f0f2f5;
+    border: 2px solid #cbd5e0;
+  }
+  .name-input:focus {
+    border-color: #4c51bf;
+    outline: none;
+  }
+
+  .button-container {
+  display: flex;
+  justify-content: center; /* Centra los botones en la página */
+  gap: 10px; /* Añade espacio entre los botones */
+}
+
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s, transform 0.2s;
+  width: auto; /* Cambia el ancho a auto para que no ocupe el 100% */
+  margin: 0; /* Elimina el margen */
+  /* El resto de tu CSS para botones aquí */
+}
+
+  button {
+    background-color: #4c51bf;
+    color: #fff;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s, transform 0.2s;
+    width: 100%; /* Ajusta el ancho al contenedor padre */
+    margin-bottom: 5px;
+  }
+  button:hover {
+    background-color: #2c5282;
+    transform: translateY(-2px);
+  }
+  button:active {
+    transform: translateY(1px);
+  }
+  button i {
+    margin-right: 8px;
+  }
+  .version-container {
+    text-align: center;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: #fff;
+    border: 2px solid #cbd5e0;
+    border-radius: 15px;
+    width: fit-content;
+  }
+  .input-container {
+  display: flex;
+  align-items: center;
+  position: relative; /* Para posicionar el icono de forma absoluta dentro de este contenedor */
+}
+.input-icon {
+  position: absolute;
+  left: 10px;
+  margin-bottom: 10px;
+  color: #4c51bf;
+  font-size: 18px;
+}
+#add-student-button-container {
+  text-align: right; /* Alinea el botón a la derecha */
+  margin-bottom: 5px; /* Añade espacio debajo del contenedor del botón */
+}
+#add-student-button-container button {
+  background-color: #ffbf00; /* Un amarillo llamativo */
+  color: #333; /* Color de texto oscuro para contraste */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra suave para resaltar el botón */
+  font-weight: bold; /* Hacer el texto un poco más grueso */
+  padding: 10px 20px; /* Ajusta el padding para reducir el tamaño del botón si es necesario */
+  display: inline-block; /* Permite que el tamaño del botón sea el del contenido */
+  margin-right: 0; /* Asegura que no haya margen adicional a la derecha */
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2); /* Sombra suave para resaltar el botón */
+
+
+  /* Mantén el resto de los estilos como bordes redondeados, padding, etc. */
+}
+
+</style>
+</head>
+<body>
+<h1>Bañómetro 🚽</h1>
+<div id="add-student-button-container">
+    <button onclick="addStudentRow()"><i class="fas fa-user-plus"></i> Añadir estudiante</button>
+    </div>
+
+<div id="students" class="students-container"></div>
+
+<div class="button-container" style="text-align: center;">
+    <button onclick="generateReport()"><i class="fas fa-file-alt"></i>Generar informe</button>
+    <button onclick="copyToClipboard()"><i class="fas fa-copy"></i> Copiar texto</button>
+    <button onclick="sendEmail()"><i class="fas fa-envelope"></i>Enviar por Gmail</button>
+    <label style="display: flex; align-items: center; margin-left: 10px;">
+      <input type="checkbox" id="encodeCheckbox" style="margin-right: 5px;"/>
+      <i class="fas fa-lock" style="margin-right: 5px;"></i>Codificar
+    </label>
+  </div>
+
+<script>
+  function getDayName(date) {
+    return ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"][date.getDay()];
+  }
+  
+  function timeToSeconds(timeStr) {
+    const [minutes, seconds] = timeStr.split(":").map(Number);
+    return (minutes * 60) + seconds;
+  }
+  
+  function padTime(time) {
+    return time.toString().padStart(2, "0");
+  }
+  
+  function toggleOtherReasonsInput(inputElement) {
+    inputElement.style.display = inputElement.style.display === "none" ? "block" : "none";
+  }
+
+  function startOrPauseTimer(timerDisplay, startButton) {
+    let intervalId = timerDisplay.intervalId; // Obtener el ID del intervalo actual del temporizador, si existe
+
+    if (!intervalId) {
+        // Si no hay un intervalo en ejecución, es decir, el temporizador está pausado o no ha comenzado:
+        const now = new Date(); // Obtener la hora actual
+
+        if (!timerDisplay.startTime) {
+            // Si el temporizador nunca ha comenzado, establecemos startTime a la hora actual
+            timerDisplay.startTime = now;
+        } else {
+            // Si el temporizador se ha pausado antes, ajustamos startTime
+            // para compensar el tiempo de pausa, manteniendo el tiempo transcurrido correcto
+            const pausedDuration = now - timerDisplay.pausedAt; // Calcular cuánto tiempo ha estado pausado
+            timerDisplay.startTime = new Date(timerDisplay.startTime.getTime() + pausedDuration);
+        }
+
+        // Establecer un intervalo para actualizar el temporizador cada segundo
+        intervalId = setInterval(() => {
+            const elapsedTime = (new Date() - timerDisplay.startTime) / 1000; // Calcular el tiempo transcurrido en segundos
+
+            // Convertir el tiempo transcurrido en minutos y segundos para la visualización
+            const minutes = Math.floor(elapsedTime / 60);
+            const seconds = Math.floor(elapsedTime % 60);
+            timerDisplay.value = padTime(minutes) + ":" + padTime(seconds); // Actualizar el temporizador en la pantalla
+
+            timerDisplay.intervalId = intervalId; // Guardar el ID del intervalo para poder detenerlo más tarde
+        }, 1000);
+
+        // Cambiar el ícono del botón a 'pausa'
+        startButton.innerHTML = '<i class="fas fa-pause"></i>';
+    } else {
+        // Si hay un intervalo en ejecución, es decir, el temporizador está activo:
+        clearInterval(intervalId); // Detener el intervalo
+        timerDisplay.intervalId = null; // Borrar el ID del intervalo para indicar que el temporizador está pausado
+        timerDisplay.pausedAt = new Date(); // Registrar el momento en que se pausó
+
+        // Cambiar el ícono del botón a 'play'
+        startButton.innerHTML = '<i class="fas fa-play"></i>';
+    }
+}
+
+function addStudentRow() {
+  const studentsDiv = document.getElementById("students");
+  const row = document.createElement("div");
+  row.classList.add("row");
+
+  const header = document.createElement("div");
+header.classList.add("student-header");
+header.textContent = `Estudiante ${studentsDiv.children.length + 1}`; // Otra opción para el título
+row.appendChild(header);
+
+  const inputContainer = document.createElement("div");
+  inputContainer.classList.add("input-container");
+
+  const icon = document.createElement("i");
+  icon.classList.add("fas", "fa-user", "input-icon");
+
+  const nameInput = document.createElement("input");
+  nameInput.classList.add("name-input");
+  nameInput.placeholder = "Nombre del estudiante";
+
+  inputContainer.appendChild(icon);
+  inputContainer.appendChild(nameInput);
+  row.appendChild(inputContainer);
+
+  const otherReasonsButton = document.createElement("button");
+  otherReasonsButton.innerText = "Otros motivos";
+  otherReasonsButton.addEventListener("click", function() {
+    toggleOtherReasonsInput(otherReasonsInput);
+  });
+  row.appendChild(otherReasonsButton);
+
+  const otherReasonsInput = document.createElement("textarea");
+  otherReasonsInput.classList.add("other-reasons-input");
+  otherReasonsInput.placeholder = "Especifica los motivos aquí";
+  otherReasonsInput.style.display = "none";
+  row.appendChild(otherReasonsInput);
+
+  const timerDisplay = document.createElement("input");
+  timerDisplay.type = "text";
+  timerDisplay.classList.add("timer");
+  timerDisplay.value = "00:00";
+  row.appendChild(timerDisplay);
+
+  const startButton = document.createElement("button");
+  startButton.innerHTML = '<i class="fas fa-play"></i>';
+  startButton.addEventListener("click", function() {
+    startOrPauseTimer(timerDisplay, startButton);
+  });
+  row.appendChild(startButton);
+
+  studentsDiv.appendChild(row);
+}
+
+
+  // Aquí van las demás funciones como generateReport y sendEmail...
+
+  function generateReport() {
+    const encode = document.getElementById('encodeCheckbox').checked;
+    const course = prompt("Indique el curso:");
+    if (course) {
+        const students = document.querySelectorAll(".row"); // Seleccionamos las filas para acceder tanto a los nombres como a los motivos
+        const currentDate = new Date();
+        const dateStr = `${currentDate.toLocaleDateString()} (${getDayName(currentDate)})`;
+        const reportContent = [`Fecha: ${dateStr}`, `Curso: ${course}`];
+
+        students.forEach((row, index) => {
+            const studentName = row.querySelector(".name-input").value.trim();
+            if (studentName !== "") {
+                const timerDisplay = row.querySelector(".timer");
+                const timeInSeconds = timeToSeconds(timerDisplay.value);
+                const percentage = (timeInSeconds / 3300) * 100;
+                reportContent.push(`Estudiante ${index + 1}: ${studentName} - Tiempo en el baño: ${timerDisplay.value} (${percentage.toFixed(2)}% del tiempo de sesión)`);
+
+                const otherReasons = row.querySelector(".other-reasons-input").value.trim();
+                if (otherReasons !== "") {
+                    reportContent.push(`Motivos de ausencia para ${studentName}: ${otherReasons}`);
+                }
+            }
+        });
+
+        const reportText = reportContent.join("\n");
+        let finalReport = reportText;
+if (encode) {
+  finalReport = btoa(finalReport);
+}
+const blob = new Blob([finalReport], { type: "text/plain" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `InformeBaño_${course}_${new Date().toLocaleDateString().replace(/\//g, "-")}.txt`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
+
+function sendEmail() {
+    const encode = document.getElementById('encodeCheckbox').checked;
+    const course = prompt("Indique el curso:");
+    if (course) {
+        const currentDate = new Date();
+        const dayName = getDayName(currentDate);
+        const formattedDate = currentDate.toLocaleDateString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }).split('/').join('-');
+        const fullDate = `(${dayName}, ${formattedDate})`;
+
+        const students = document.querySelectorAll(".row");
+        let emailContent = [`Fecha: ${currentDate.toLocaleDateString('es-ES')} (${getDayName(currentDate)})`, `Curso: ${course}`];
+
+        students.forEach((row, index) => {
+            const studentName = row.querySelector(".name-input").value.trim();
+            if (studentName !== "") {
+                const timerDisplay = row.querySelector(".timer");
+                const timeInSeconds = timeToSeconds(timerDisplay.value);
+                const percentage = (timeInSeconds / 3300) * 100;
+                emailContent.push(`Estudiante ${index + 1}: ${studentName} - Tiempo en el baño: ${timerDisplay.value} (${percentage.toFixed(2)}% del tiempo de sesión)`);
+
+                const otherReasons = row.querySelector(".other-reasons-input").value.trim();
+                if (otherReasons !== "") {
+                    emailContent.push(`Motivos de ausencia para ${studentName}: ${otherReasons}`);
+                }
+            }
+        });
+
+        let body = emailContent.join("\n");
+        if (encode) {
+            body = encodeURIComponent(btoa(body));
+        } else {
+            body = encodeURIComponent(body);
+        }
+
+        window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=&su=${encodeURIComponent(`Informe Bañómetro - Curso ${course} ${fullDate}`)}&body=${body}`, '_blank');
+    }
+}
+
+
+
+    function padTime(time) {
+        return time < 10 ? "0" + time : time;
+    }
+    function toggleOtherReasonsInput(inputElement) {
+    if (inputElement.style.display === "none") {
+        inputElement.style.display = "block"; // Muestra el campo
+    } else {
+        inputElement.style.display = "none"; // Oculta el campo
+    }
+}
+function copyToClipboard() {
+    const encode = document.getElementById('encodeCheckbox').checked;
+    let emailContent = generateEmailContent(); // Asume que esta función devuelve el contenido del email como una cadena.
+
+    if (encode) {
+        // Directamente codifica en Base 64 sin codificación de URL.
+        emailContent = btoa(unescape(encodeURIComponent(emailContent)));
+    }
+
+    const tempInput = document.createElement('textarea');
+    tempInput.value = emailContent;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempInput);
+
+    alert('Copiado en el portapapeles');
+}
+
+
+
+
+
+
+function generateEmailContent() {
+    const course = prompt("Indique el curso:"); // Pregunta al usuario por el curso
+    if (!course) return; // Si no se proporciona un curso, no hace nada
+
+    let emailContent = ""; // Inicializa la variable para el contenido del correo electrónico
+    const currentDate = new Date();
+    const dayName = getDayName(currentDate);
+    const formattedDate = currentDate.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    }).split('/').join('-');
+    const fullDate = `(${dayName}, ${formattedDate})`;
+
+    // Comienza a construir el contenido del correo electrónico
+    emailContent += `Fecha: ${currentDate.toLocaleDateString('es-ES')} (${getDayName(currentDate)})\n`;
+    emailContent += `Curso: ${course}\n`;
+
+    const students = document.querySelectorAll(".row");
+    students.forEach((row, index) => {
+        const studentName = row.querySelector(".name-input").value.trim();
+        if (studentName !== "") {
+            const timerDisplay = row.querySelector(".timer");
+            const timeInSeconds = timeToSeconds(timerDisplay.value);
+            const percentage = (timeInSeconds / 3300) * 100;
+            emailContent += `Estudiante ${index + 1}: ${studentName} - Tiempo en el baño: ${timerDisplay.value} (${percentage.toFixed(2)}% del tiempo de sesión)\n`;
+
+            const otherReasons = row.querySelector(".other-reasons-input").value.trim();
+            if (otherReasons !== "") {
+                emailContent += `Motivos de ausencia para ${studentName}: ${otherReasons}\n`;
+            }
+        }
+    });
+
+    return emailContent; // Retorna el contenido construido del correo electrónico
+}
+
+
+</script>
+<div class="version-container">
+  Versión 2.0
+</div>
+</body>
+</html>

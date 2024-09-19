@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Concurso Televisivo</title>
+<script src="https://twemoji.maxcdn.com/v/latest/twemoji.min.js" crossorigin="anonymous"></script>
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background-color: #1e1e1e;
+    color: white;
+    text-align: center;
+    overflow: hidden;
+    position: relative;
+    height: 100vh;
+  }
+  #addContestantArea, #finalButtonArea {
+    margin-bottom: 20px;
+  }
+  .concurso-list {
+    list-style-type: none;
+    padding: 0;
+    width: 80%;
+    margin: 20px auto 0 auto;
+  }
+  .concurso-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #333;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .contestant-name {
+    flex-grow: 1;
+  }
+  .points {
+    background-color: black;
+    color: lime;
+    font-size: 24px;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-family: 'Digital-7 Mono', monospace;
+    margin-right: 20px;
+  }
+  .button-group {
+    display: flex;
+    gap: 10px;
+  }
+  .gold {
+    background-color: #ffd700;
+    color: black;
+  }
+  button {
+    padding: 5px 10px;
+    background-color: #444;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  button:hover {
+    background-color: #555;
+  }
+  #winnerMessage {
+    font-size: 48px;
+    color: gold;
+    margin-top: 20px;
+  }
+  #squirtleGif {
+    position: absolute;
+    right: 10px; /* Position on the right side of the screen */
+    bottom: 30px; /* Position a little from the top */
+    display: none; /* Hidden by default */
+  }
+  .emoji {
+    position: absolute;
+    font-size: 48px;
+    animation: fall 5s linear;
+    opacity: 0; /* Starts invisible for appearance effect */
+  }
+  @keyframes fall {
+    0% { top: -10%; opacity: 1; }
+    100% { top: 110%; opacity: 1; }
+  }
+</style>
+</head>
+<body>
+  <audio id="backgroundMusic" loop>
+    <source src="champ.mp3" type="audio/mp3">
+    Your browser does not support the audio element.
+  </audio>
+  <img id="squirtleGif" src="squirtle.gif" alt="Squirtle Dancing">
+  <div id="addContestantArea">
+    <h2>Agregar concursante:</h2>
+    <input type="text" id="newContestant" placeholder="Nombre del concursante">
+    <button onclick="addContestant()">Agregar</button>
+    <button onclick="confirmAddition()">Todos agregados</button>
+  </div>
+  <ul id="contestantList" class="concurso-list"></ul>
+  <div id="finalButtonArea">
+    <button onclick="finalizeVotes()">¡Votos finalizados!</button>
+  </div>
+  <div id="winnerMessage"></div>
+
+  <script>
+    var contestants = [];
+    var celebrationActive = false;
+
+    function addContestant() {
+      var name = document.getElementById('newContestant').value;
+      if (name) {
+        contestants.push({ name: name, points: 0 });
+        document.getElementById('newContestant').value = '';
+        updateList();
+      }
+    }
+
+    function confirmAddition() {
+      if (confirm('¿Estás seguro de que todos los concursantes han sido agregados?')) {
+        document.getElementById('addContestantArea').style.display = 'none';
+      }
+    }
+
+    function addPoints(index, points) {
+      contestants[index].points += points;
+      updateList();
+    }
+
+    function updateList() {
+      contestants.sort((a, b) => b.points - a.points);
+      const highestPoints = contestants.length > 0 ? contestants[0].points : 0;
+      const list = document.getElementById('contestantList');
+      list.innerHTML = '';
+      contestants.forEach((contestant, index) => {
+        const item = document.createElement('li');
+        item.className = 'concurso-item' + (contestant.points === highestPoints ? ' gold' : '');
+        item.innerHTML = `<span class="contestant-name">${contestant.name}</span>
+                          <span class="points">${contestant.points} puntos</span>
+                          <div class="button-group">
+                            <button onclick="addPoints(${index}, 1)">+1</button>
+                            <button onclick="addPoints(${index}, 3)">+3</button>
+                            <button onclick="addPoints(${index}, 5)">+5</button>
+                          </div>`;
+        list.appendChild(item);
+      });
+    }
+
+    function createEmoji() {
+      if (!celebrationActive) return;
+      const emojiChars = ['🎉', '🥳', '🎊', '✨', '🎈'];
+      let emojiElement = document.createElement('div');
+      emojiElement.className = 'emoji';
+      emojiElement.style.left = `${Math.random() * 100}%`;
+      emojiElement.textContent = emojiChars[Math.floor(Math.random() * emojiChars.length)];
+      document.body.appendChild(emojiElement);
+      twemoji.parse(document.body);
+      setTimeout(() => document.body.removeChild(emojiElement), 5000);
+      setTimeout(createEmoji, 250);
+    }
+
+    function finalizeVotes() {
+      celebrationActive = true;
+      document.getElementById('backgroundMusic').play();  // Start playing the music
+      document.getElementById('squirtleGif').style.display = 'block';  // Show the Squirtle GIF
+      createEmoji();
+      if (contestants.length > 0) {
+        document.getElementById('winnerMessage').textContent = '¡Ganador: ' + contestants[0].name + '!';
+      }
+    }
+  </script>
+</body>
+</html>

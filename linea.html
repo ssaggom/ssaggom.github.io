@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Línea de Tiempo Interactiva</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    #timeline-container {
+        width: 80%;
+        position: relative;
+    }
+
+    #timeline {
+        width: 100%;
+        height: 10px;
+        background-color: #ddd;
+        position: relative;
+        cursor: none; /* Cambiado para ocultar el cursor */
+    }
+
+    #pointer {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: #333;
+        position: absolute;
+        top: -5px;
+        display: none;
+    }
+
+    #date-display {
+        position: absolute;
+        top: -30px; /* Ajustado para evitar la superposición con el puntero */
+        font-size: 16px;
+        color: #333;
+        white-space: nowrap;
+        transform: translateX(-50%); /* Centrar horizontalmente respecto al puntero */
+    }
+
+    #start-date, #end-date {
+        position: absolute;
+        bottom: -20px;
+        font-size: 12px;
+    }
+
+    #start-date {
+        left: 0;
+    }
+
+    #end-date {
+        right: 0;
+    }
+</style>
+</head>
+<body>
+
+<script>
+    // Esperar a que el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+        // Solicitar información al usuario
+        const startDate = prompt('¿En qué día, mes y año comienza tu línea del tiempo? (formato DD/MM/AAAA)', '01/01/2000');
+        const endDate = prompt('¿En qué día, mes y año finaliza tu línea del tiempo? (formato DD/MM/AAAA)', '31/12/2000');
+        const title = prompt('¿Cuál es el título de tu línea del tiempo?', 'Mi Línea del Tiempo');
+
+        // Crear y mostrar la línea de tiempo
+        createTimeline(startDate, endDate, title);
+    });
+
+    function createTimeline(startDate, endDate, title) {
+        // Crear contenedor de la línea de tiempo
+        const container = document.createElement('div');
+        container.id = 'timeline-container';
+        document.body.appendChild(container);
+
+        // Título
+        const titleElement = document.createElement('h2');
+        titleElement.textContent = title;
+        container.appendChild(titleElement);
+
+        // Línea de tiempo
+        const timeline = document.createElement('div');
+        timeline.id = 'timeline';
+        container.appendChild(timeline);
+
+        // Pointer
+        const pointer = document.createElement('div');
+        pointer.id = 'pointer';
+        timeline.appendChild(pointer);
+
+        // Display de fecha
+        const dateDisplay = document.createElement('div');
+        dateDisplay.id = 'date-display';
+        timeline.appendChild(dateDisplay);
+
+        // Fechas de inicio y fin
+        const startDateElement = document.createElement('div');
+        startDateElement.id = 'start-date';
+        startDateElement.textContent = startDate;
+        timeline.appendChild(startDateElement);
+
+        const endDateElement = document.createElement('div');
+        endDateElement.id = 'end-date';
+        endDateElement.textContent = endDate;
+        timeline.appendChild(endDateElement);
+
+        // Eventos del ratón
+        timeline.addEventListener('mousemove', function(event) {
+            const timelineRect = this.getBoundingClientRect();
+            const x = event.clientX - timelineRect.left; // Posición x dentro de la línea de tiempo
+            const percentage = x / timelineRect.width;
+            const date = calculateDate(startDate, endDate, percentage);
+            
+            pointer.style.left = `${x - 10}px`; // Centrar el puntero
+            pointer.style.display = 'block';
+            dateDisplay.textContent = date;
+            dateDisplay.style.left = `${x}px`;
+        });
+
+        timeline.addEventListener('mouseleave', function() {
+            pointer.style.display = 'none';
+            dateDisplay.textContent = '';
+        });
+    }
+
+    function calculateDate(start, end, percentage) {
+        const startDate = new Date(start.split('/').reverse().join('-'));
+        const endDate = new Date(end.split('/').reverse().join('-'));
+        const diffTime = endDate.getTime() - startDate.getTime();
+        const newTime = startDate.getTime() + diffTime * percentage;
+        const newDate = new Date(newTime);
+
+        return newDate.toLocaleDateString('es-ES');
+    }
+</script>
+
+</body>
+</html>

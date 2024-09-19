@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diario de clase</title>
+<!-- Añadir FontAwesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        padding: 20px;
+        background-color: #f0f2f5;
+        color: #333;
+    }
+    h2 {
+        color: #1a202c;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+.section {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    position: relative; /* Añadido para asegurar que el shadow y el border-radius se muestren correctamente */
+    overflow: hidden; /* Añadido para asegurar que los hijos no sobresalgan del padding */
+}
+    }
+    .section label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 18px;
+        color: #4a5568;
+    }
+
+    /* Estilos adicionales para los iconos en los botones */
+    .button-icon {
+        margin-right: 5px;
+    }
+
+    /* Actualización de estilos de botones para acomodar iconos */
+    button {
+        /* ...resto de tus estilos de botón... */
+        display: flex; /* Cambiado a flex para alinear el icono y el texto */
+        justify-content: center; /* Centra el contenido horizontalmente */
+        align-items: center; /* Centra el contenido verticalmente */
+    }
+
+textarea {
+    width: calc(100% - 40px); /* Ajusta el ancho para tener en cuenta el padding */
+    height: 120px;
+    border: 2px solid #cbd5e0;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 14px;
+    color: #2d3748;
+    transition: border-color 0.3s;
+    margin: 0; /* Asegura que no haya margen por defecto */
+    display: block; /* Asegura que el elemento ocupe su propio espacio sin estar alineado con otros elementos inline */
+}    textarea:focus {
+        outline: none;
+        border-color: #4c51bf;
+    }
+    button {
+        background-color: #4c51bf;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s, transform 0.2s;
+        margin-right: 10px;
+    display: inline-block; /* Asegura que los botones no se estiren a lo ancho del contenedor */
+    margin-bottom: 10px; /* Añade un margen debajo de cada botón */
+}
+    }
+    button:hover {
+        background-color: #2c5282;
+        transform: translateY(-2px);
+    }
+    button:active {
+        transform: translateY(1px);
+    }
+/* Estilos adicionales para el contenedor de los botones, si se desea */
+.buttons-container {
+    text-align: center; /* Centra los botones si están en su propio contenedor */
+    margin-top: 20px; /* Añade un margen superior al contenedor de los botones */
+}
+.version-container {
+    text-align: center; /* Centra el texto dentro de la celda */
+    margin: 20px auto; /* Añade un margen arriba y abajo, y auto para centrar la celda horizontalmente */
+    padding: 10px; /* Añade un poco de espacio dentro de la celda */
+    background-color: #fff; /* Establece un color de fondo para la celda */
+    border: 2px solid #cbd5e0; /* Establece el color y grosor del borde */
+    border-radius: 15px; /* Redondea las esquinas del borde */
+    width: fit-content; /* Ajusta el ancho de la celda al contenido */
+}
+</style>
+</head>
+<body>
+
+<center><h1>Diario de clase 📓</h1></center>
+
+<div class="section">
+    <label for="deberes"><b>DEBERES</b></label>
+    <textarea id="deberes"></textarea>
+</div>
+
+<div class="section">
+    <label for="incidencias"><b>INCIDENCIAS</b></label>
+    <textarea id="incidencias"></textarea>
+</div>
+
+<div class="section">
+    <label for="otrosApuntes"><b>OTROS APUNTES</b></label>
+    <textarea id="otrosApuntes"></textarea>
+</div>
+
+<div class="buttons-container">
+    <button id="descargarTXT"><i class="fas fa-download button-icon"></i>Descargar informe en TXT</button>
+    <button id="enviarEmail"><i class="fas fa-envelope button-icon"></i>Enviar por correo electrónico</button>
+    <button id="enviarGmail"><i class="fas fa-envelope button-icon"></i>Enviar por Gmail</button>
+</div>
+
+<script>
+    document.getElementById('descargarTXT').onclick = function() {
+        const grupo = prompt("¿A qué grupo corresponde el informe?");
+        const now = new Date();
+        const fecha = now.toLocaleDateString('es-ES');
+        const hora = now.toLocaleTimeString('es-ES');
+        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const diaSemana = dias[now.getDay()].toLowerCase(); // Obtiene el día de la semana y lo convierte a minúsculas
+
+        const deberes = document.getElementById('deberes').value;
+        const incidencias = document.getElementById('incidencias').value;
+        const otrosApuntes = document.getElementById('otrosApuntes').value;
+        
+        const contenido = `Grupo: ${grupo}\nFecha: ${diaSemana}, ${fecha}\nHora: ${hora}\n\nDEBERES:\n${deberes}\n\nINCIDENCIAS:\n${incidencias}\n\nOTROS APUNTES:\n${otrosApuntes}`;
+        
+        const blob = new Blob([contenido], { type: 'text/plain;charset=utf-8' });
+        const enlace = document.createElement('a');
+        enlace.href = URL.createObjectURL(blob);
+        enlace.download = `Informe_${grupo}_${fecha.replace(/\/|:/g, '-')}.txt`;
+        
+        document.body.appendChild(enlace);
+        enlace.click();
+        document.body.removeChild(enlace);
+    };
+
+    document.getElementById('enviarEmail').onclick = function() {
+        const grupo = prompt("¿A qué grupo corresponde la información?");
+        const now = new Date();
+        const fecha = now.toLocaleDateString('es-ES');
+        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const diaSemana = dias[now.getDay()].toLowerCase(); // Obtiene el día de la semana y lo convierte a minúsculas
+
+        const deberes = document.getElementById('deberes').value;
+        const incidencias = document.getElementById('incidencias').value;
+        const otrosApuntes = document.getElementById('otrosApuntes').value;
+        
+        const cuerpoEmail = `Grupo: ${grupo}\nFecha: ${diaSemana}, ${fecha}\n\nDeberes:\n${deberes}\n\nIncidencias:\n${incidencias}\n\nOtros Apuntes:\n${otrosApuntes}`;
+        window.location.href = `mailto:?subject=${encodeURIComponent(`Diario de clase - Grupo ${grupo} - ${diaSemana}, ${fecha}`)}&body=${encodeURIComponent(cuerpoEmail)}`;
+
+    };
+
+    document.getElementById('enviarGmail').onclick = function() {
+        const grupo = prompt("¿A qué grupo corresponde la información?");
+        const now = new Date();
+        const fecha = now.toLocaleDateString('es-ES');
+        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const diaSemana = dias[now.getDay()].toLowerCase(); // Obtiene el día de la semana y lo convierte a minúsculas
+
+        const deberes = document.getElementById('deberes').value;
+        const incidencias = document.getElementById('incidencias').value;
+        const otrosApuntes = document.getElementById('otrosApuntes').value;
+        
+        const asunto = encodeURIComponent(`Diario de clase - Grupo ${grupo} - ${diaSemana}, ${fecha}`);
+        const cuerpoEmail = `Grupo: ${grupo}\nFecha: ${diaSemana}, ${fecha}\n\nDeberes:\n${deberes}\n\nIncidencias:\n${incidencias}\n\nOtros Apuntes:\n${otrosApuntes}`;
+        const cuerpo = encodeURIComponent(cuerpoEmail);
+
+        const enlaceGmail = `https://mail.google.com/mail/?view=cm&fs=1&to=&su=${asunto}&body=${cuerpo}`;
+        window.open(enlaceGmail, '_blank');
+    };
+</script>
+<div class="version-container">
+    Versión 1.0
+</div>
+</body>
+</html>

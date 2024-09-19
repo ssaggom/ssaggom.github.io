@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Medidor de Ruido en Línea</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            text-align: center;
+            padding: 50px;
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #005A9C;
+            margin-bottom: 20px;
+        }
+
+        button {
+            font-size: 1.5em;
+            padding: 15px 30px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #volumeBarContainer {
+            width: 80%;
+            background-color: #ddd;
+            border-radius: 10px;
+            margin: 30px auto;
+            height: 50px;
+            padding: 5px;
+            position: relative;
+        }
+
+        #volumeBar {
+            height: 100%;
+            width: 0%;
+            background-color: #4CAF50;
+            border-radius: 5px;
+            transition: width 0.3s;
+        }
+
+        .decibelIndicator {
+            position: absolute;
+            bottom: -25px;
+            width: 1px;
+            height: 20px;
+            background-color: #333;
+        }
+
+        .decibelLabel {
+            position: absolute;
+            bottom: -50px;
+            white-space: nowrap;
+            transform: translateX(-50%);
+            font-size: 0.8em;
+        }
+
+        #penaltyOptions {
+            margin-top: 60px;
+        }
+
+        #warningMessage {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: darkred;
+            color: white;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            text-align: center;
+            flex-direction: column;
+        }
+
+        .warning-text {
+        font-size: 2em;
+        margin-top: -0.25em;
+        font-weight: bold; /* Negrita para el texto de advertencia */
+        animation: parpadeo 1s infinite; /* Aplica la animación de parpadeo */
+    }
+
+    /* Animación de parpadeo */
+    @keyframes parpadeo {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+    }
+
+        .return-button {
+            font-size: 1em;
+            padding: 10px 20px;
+            background-color: #555;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: auto;
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .version-container {
+    text-align: center;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: #fff;
+    border: 2px solid #cbd5e0;
+    border-radius: 15px;
+    width: fit-content;
+  }
+    </style>
+</head>
+<body>
+    <h1>Medidor de Ruido 🔊</h1>
+    <button id="start">Iniciar</button>
+    <div id="volumeBarContainer">
+        <div id="volumeBar"></div>
+        <div class="decibelIndicator" style="left: 0%;"></div>
+        <div class="decibelLabel" style="left: 0%;">0dB</div>
+        <div class="decibelIndicator" style="left: 25%;"></div>
+        <div class="decibelLabel" style="left: 25%;">25dB</div>
+        <div class="decibelIndicator" style="left: 50%;"></div>
+        <div class="decibelLabel" style="left: 50%;">50dB</div>
+        <div class="decibelIndicator" style="left: 75%;"></div>
+        <div class="decibelLabel" style="left: 75%;">75dB</div>
+        <div class="decibelIndicator" style="left: 100%;"></div>
+        <div class="decibelLabel" style="left: 100%;">100dB</div>
+    </div>
+    <div id="penaltyOptions">
+        <label>
+            <input type="checkbox" id="penaltyCheckbox"> Activar Penalizaciones
+        </label>
+        <select id="penaltyLevel">
+            <option value="15">5dB</option>
+            <option value="35">25dB</option>
+            <option value="60">50dB</option>
+            <option value="85">75dB</option>
+        </select>
+    </div>
+
+    <div id="warningMessage">
+        <span style="font-size: 14em; color: yellow;">⚠️</span>
+        <p class="warning-text">¡EXCESO DE RUIDO!</p>
+        <button id="returnButton" class="return-button">Volver</button>
+    </div>
+
+    <audio id="audioAlarm" src="alarma.mp3" preload="auto"></audio>
+
+    <div id="warningMessage">
+        <!-- ... contenido de warningMessage ... -->
+    </div>
+
+    <script>
+        let penaltyThreshold = 0;
+        let penaltyActive = false;
+
+        document.getElementById('penaltyCheckbox').onchange = handlePenaltyChange;
+        document.getElementById('penaltyLevel').onchange = handlePenaltyChange;
+
+        function handlePenaltyChange() {
+            penaltyActive = document.getElementById('penaltyCheckbox').checked;
+            penaltyThreshold = parseInt(document.getElementById('penaltyLevel').value, 10);
+        }
+
+        document.getElementById('start').onclick = function() {
+            navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+                .then(function(stream) {
+                    const audioContext = new AudioContext();
+                    const analyser = audioContext.createAnalyser();
+                    const microphone = audioContext.createMediaStreamSource(stream);
+                    microphone.connect(analyser);
+                    analyser.fftSize = 256;
+                    const bufferLength = analyser.frequencyBinCount;
+                    const dataArray = new Uint8Array(bufferLength);
+
+                    function getVolume() {
+                        analyser.getByteFrequencyData(dataArray);
+                        let sum = 0;
+                        for (let i = 0; i < bufferLength; i++) {
+                            sum += dataArray[i];
+                        }
+                        let volume = sum / bufferLength;
+                        let volumePercent = Math.min(100, (volume / 128) * 100);
+                        document.getElementById('volumeBar').style.width = volumePercent + '%';
+
+                        if (penaltyActive && volumePercent >= penaltyThreshold) {
+                            activatePenaltyMode();
+                        }
+
+                        requestAnimationFrame(getVolume);
+                    }
+
+                    getVolume();
+                }).catch(function(err) {
+                    console.error("Error: " + err.name);
+                });
+        };
+
+        function activatePenaltyMode() {
+            document.getElementById('warningMessage').style.display = 'flex';
+            document.getElementById('audioAlarm').play(); // Inicia la reproducción del sonido de alarma.
+        }
+
+        document.getElementById('returnButton').onclick = function() {
+            document.getElementById('warningMessage').style.display = 'none';
+            document.getElementById('audioAlarm').pause(); // Detiene la reproducción del sonido.
+            document.getElementById('audioAlarm').currentTime = 0; // Restablece el sonido al inicio.
+        };
+
+    </script>
+<div class="version-container">
+  Versión 1.0
+</div>
+</body>
+</html>
