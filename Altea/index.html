@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¿Cuánto falta para que nazca Altea?</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* General body styles */
+        body {
+            background-color: #1e1e1e; /* Dark background color */
+            color: #ffffff; /* White text color for contrast */
+            font-family: Arial, Helvetica, sans-serif; /* Font style */
+            display: flex; /* Flexbox to center elements */
+            flex-direction: column; /* Column layout for centering vertically */
+            justify-content: center; /* Center vertically */
+            align-items: center; /* Center horizontally */
+            height: 100vh; /* Full viewport height */
+            margin: 0; /* Remove default margin */
+            text-align: center; /* Center text alignment */
+        }
+        
+        /* Title styles */
+        h1 {
+            font-size: 2.5em; /* Larger font size for title */
+        }
+        
+        /* Countdown timer styles */
+        #contador {
+            font-size: 4em; /* Very large font size for emphasis */
+            margin: 20px 0; /* Spacing around the countdown */
+        }
+        
+        /* Container for buttons */
+        .buttons-container {
+            margin-top: 30px; /* Spacing from the countdown timer */
+        }
+        
+        /* Button styles */
+        .button {
+            display: inline-block; /* Inline-block for horizontal arrangement */
+            margin: 10px; /* Spacing between buttons */
+            padding: 15px 25px; /* Padding for button size */
+            background-color: #4caf50; /* Green background color */
+            color: #fff; /* White text color */
+            border: none; /* Remove default border */
+            border-radius: 50px; /* Rounded edges for buttons */
+            font-size: 1.2em; /* Slightly larger text size */
+            text-decoration: none; /* Remove underline from links */
+            cursor: pointer; /* Pointer cursor on hover */
+            transition: background-color 0.3s; /* Smooth transition for hover effect */
+        }
+        
+        /* Button hover effect */
+        .button:hover {
+            background-color: #45a049; /* Darker green on hover */
+        }
+        
+        /* Font Awesome icon margin */
+        .fa {
+            margin-right: 10px; /* Space between icon and text */
+        }
+    </style>
+</head>
+<body>
+    <!-- Background music that plays in a loop -->
+    <audio src="musica.mp3" autoplay loop></audio>
+    
+    <!-- Title -->
+    <h1>¿Cuánto falta para que nazca Altea?</h1>
+    
+    <!-- Countdown display -->
+    <div id="contador"></div>
+    
+    <!-- Additional prompt below countdown -->
+    <p>¿Qué puedo hacer mientras espero a que nazca Altea?</p>
+    
+    <!-- Buttons for different pages -->
+    <div class="buttons-container">
+        <!-- Button to take a personality test -->
+        <a href="test.html" class="button"><i class="fa fa-question-circle"></i>Test: ¿Qué letra de Altea eres?</a>
+        <!-- Button to view photos of Altea -->
+        <a href="fotos.html" class="button"><i class="fa fa-image"></i>Fotos de Altea</a>
+        <!-- Button to write a message to Altea's parents -->
+        <a href="escribe.html" class="button"><i class="fa fa-pencil-alt"></i>Escribe algo a los papás de Altea</a>
+    </div>
+
+    <script>
+        // Function to update the countdown timer
+        function updateCountdown() {
+            // Set the target date for the countdown (4th November 2024, at midnight)
+            const targetDate = new Date('November 4, 2024 00:00:00').getTime();
+            // Get the current date and time
+            const now = new Date().getTime();
+            // Calculate the difference in milliseconds
+            const difference = targetDate - now;
+            // Get the element to display the countdown
+            const contadorElement = document.getElementById('contador');
+
+            // If the target date has already passed
+            if (difference <= 0) {
+                // Display message indicating that the date has passed
+                contadorElement.innerHTML = '¡Fecha provista de parto sobrepasada!';
+            } else {
+                // Calculate remaining days, hours, minutes, and seconds
+                const days = Math.floor(difference / (1000 * 60 * 60 * 24)); // Days remaining
+                const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)); // Hours remaining
+                const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)); // Minutes remaining
+                const seconds = Math.floor((difference % (1000 * 60)) / 1000); // Seconds remaining
+
+                // Display the countdown in the format: 'Xd Yh Zm Ws'
+                contadorElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }
+        }
+
+        // Update the countdown every second (1000 milliseconds)
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>

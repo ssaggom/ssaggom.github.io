@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test: ¿Qué letra de Altea eres?</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            font-family: Arial, Helvetica, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        .question {
+            font-size: 1.5em;
+            margin: 15px 0;
+        }
+        .button {
+            display: inline-block;
+            margin: 10px;
+            padding: 15px 25px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .fa {
+            margin-right: 10px;
+        }
+        #result {
+            font-size: 2em;
+            margin-top: 20px;
+            display: none;
+        }
+        .restart-button {
+            margin-top: 20px;
+            padding: 15px 25px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.2em;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .restart-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test: ¿Qué letra de ALTEA eres?</h1>
+    <div id="quiz-container">
+        <!-- Five absurd questions -->
+        <div class="question">1. ¿Qué prefieres desayunar los lunes por la mañana?</div>
+        <button class="button" onclick="nextQuestion()">A) Una nube de colores</button>
+        <button class="button" onclick="nextQuestion()">B) Un zapato izquierdo</button>
+
+        <div class="question">2. ¿Qué animal serías si te convirtieras en uno?</div>
+        <button class="button" onclick="nextQuestion()">A) Un mosquito bailarín</button>
+        <button class="button" onclick="nextQuestion()">B) Un camello que cuenta chistes</button>
+
+        <div class="question">3. ¿Qué instrumento musical es el más util para pintar un cuadro?</div>
+        <button class="button" onclick="nextQuestion()">A) Una tuba imaginaria</button>
+        <button class="button" onclick="nextQuestion()">B) Una guitarra llena de purpurina</button>
+
+        <div class="question">4. ¿Si fueras un olor, cuál serías?</div>
+        <button class="button" onclick="nextQuestion()">A) El olor a calcetines mojados</button>
+        <button class="button" onclick="nextQuestion()">B) Aroma de pizza con piña</button>
+
+        <div class="question">5. ¿Cuál es tu lugar favorito para perder el tiempo?</div>
+        <button class="button" onclick="showResult()">A) Dentro de una caja de cartón gigante</button>
+        <button class="button" onclick="showResult()">B) En el estante de una librería olvidada</button>
+    </div>
+    
+    <!-- Display result -->
+    <div id="result"></div>
+    
+    <!-- Restart button -->
+    <button class="restart-button" id="restart-button" onclick="restartQuiz()" style="display: none;"><i class="fa fa-redo"></i> Reiniciar el test</button>
+
+    <script>
+        let currentQuestion = 0;
+        const totalQuestions = 5;
+        const questions = document.querySelectorAll('.question');
+        const buttons = document.querySelectorAll('.button');
+        
+        function nextQuestion() {
+            // Hide current question
+            questions[currentQuestion].style.display = 'none';
+            buttons[currentQuestion * 2].style.display = 'none';
+            buttons[currentQuestion * 2 + 1].style.display = 'none';
+
+            // Move to the next question
+            currentQuestion++;
+            
+            // If there are more questions, show the next one
+            if (currentQuestion < totalQuestions) {
+                questions[currentQuestion].style.display = 'block';
+                buttons[currentQuestion * 2].style.display = 'inline-block';
+                buttons[currentQuestion * 2 + 1].style.display = 'inline-block';
+            }
+        }
+
+        function showResult() {
+            // Hide quiz container
+            document.getElementById('quiz-container').style.display = 'none';
+            
+            // Define the possible results with characteristics
+            const results = [
+                '¡Eres... la A del principio! Tu fuerte personalidad y tu deseo de ser el primero en todo te convierten en la A inicial de ALTEA. ¡Bravo!',
+                '¡Eres... la L! Tus increíbles ganas de sobresalir en todos los campos y tu obsesión por controlarlo todo te convierten, indudablemente, en una L. ¡Felicidades!',
+                '¡Eres... la T! Siempre en el medio, equilibrado y estable. Tienes un don para mediar en situaciones absurdas. ¡Eres la T de ALTEA!',
+                '¡Eres... la E! Alegre y lleno de energía, aportas entusiasmo a cada situación en la que participas. ¡Sin duda, eres la E!',
+                '¡Eres... la A del final! Te gusta dar el toque final a las cosas y ser recordado por tu calma y determinación. ¡Eres la A del final!'
+            ];
+
+            // Select a random result
+            const randomIndex = Math.floor(Math.random() * results.length);
+            const resultText = results[randomIndex];
+
+            // Display the result
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = resultText;
+            resultElement.style.display = 'block';
+
+            // Display the restart button
+            document.getElementById('restart-button').style.display = 'block';
+        }
+
+        function restartQuiz() {
+            // Refresh the page to restart the quiz
+            location.reload();
+        }
+    </script>
+</body>
+</html>
