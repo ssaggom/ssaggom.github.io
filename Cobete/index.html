@@ -145,6 +145,8 @@
             padding: 5px 10px;
             border-radius: 5px;
             background: rgba(255, 255, 255, 0.1);
+            text-decoration: none;
+            border-bottom: none;
         }
 
         .box-tools {
@@ -217,6 +219,8 @@
             flex-grow: 1;
             min-width: 0;
             text-align: left;
+            text-decoration: none;
+            border-bottom: none;
         }
 
         .context-menu {
@@ -273,7 +277,6 @@
             z-index: 10;
         }
 
-        /* Patrones de Color */
         .pattern1 { background: linear-gradient(135deg, #2c3e50, #3498db); }
         .pattern2 { background: linear-gradient(135deg, #ff6b6b, #4ecdc4); }
         .pattern3 { background: linear-gradient(135deg, #1a1a1a, #666); }
@@ -283,7 +286,6 @@
         .pattern7 { background: linear-gradient(135deg, #f1c40f, #e67e22); }
         .pattern8 { background: linear-gradient(135deg, #34495e, #9b59b6); }
 
-        /* Ajustar colores dentro de las cajas según el tema */
         body.pattern1 .box h3,
         body.pattern1 .box span,
         body.pattern1 .box .box-btn {
@@ -380,7 +382,6 @@
             color: #e5cce9;
         }
 
-        /* Clase para colores personalizados */
         body.custom-colors .box h3,
         body.custom-colors .box span,
         body.custom-colors .box .box-btn {
@@ -458,13 +459,13 @@
         }
 
         .credits-btn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    z-index: 1000;
-    background: rgba(255, 255, 255, 0.2);
-    color: #fff; /* Añadido para que el ícono sea blanco */
-}
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
 
         .credits-modal {
             display: none;
@@ -539,6 +540,8 @@
         <button onclick="deleteBookmark()">Eliminar</button>
         <button onclick="duplicateBookmark()">Duplicar</button>
         <button onclick="moveBookmark()">Mover</button>
+        <button onclick="copyLink()">Copiar Enlace</button>
+        <button onclick="reorderBookmarks()">Reordenar</button>
     </div>
 
     <div class="modal" id="linkModal">
@@ -663,7 +666,7 @@
             box.className = 'box';
             box.innerHTML = `
                 <div class="box-header">
-                    <h3 contenteditable="true" onblur="saveState()">${title}</h3>
+                    <h3 contenteditable="true" spellcheck="false" onblur="saveState()">${title}</h3>
                     <div class="box-tools">
                         <button class="box-btn" title="Añadir Enlace" onclick="showLinkModal(this.parentElement.parentElement.parentElement)"><i class="fas fa-plus"></i></button>
                         <button class="box-btn" title="Mover Caja" onclick="moveBox(this.parentElement.parentElement.parentElement)"><i class="fas fa-arrows-alt"></i></button>
@@ -790,7 +793,7 @@
             bookmark.dataset.url = url;
             bookmark.innerHTML = `
                 ${icon.startsWith('fa') ? `<i class="${icon}"></i>` : `<img src="${icon}" alt="icon">`}
-                <span contenteditable="true" onblur="saveState()">${title}</span>
+                <span contenteditable="true" spellcheck="false" onblur="saveState()">${title}</span>
             `;
             bookmark.addEventListener('contextmenu', (e) => showContextMenu(e, bookmark));
             bookmark.addEventListener('click', (e) => {
@@ -824,6 +827,7 @@
         function getFavicon(url) {
             return `https://www.google.com/s2/favicons?domain=${url}&sz=64`;
         }
+
         function getTitle(url) {
             return url.split('/')[2] || 'Marcador';
         }
@@ -860,7 +864,7 @@
 
         function moveBookmark() {
             if (boxes.length === 0) {
-                alert('No hay cajas a las que mover el marcador.');
+ کوتاه:                alert('No hay cajas a las que mover el marcador.');
                 hideContextMenu();
                 return;
             }
@@ -884,6 +888,43 @@
             const targetBookmarks = targetBox.querySelector('.bookmarks');
             targetBookmarks.appendChild(currentBookmark);
             saveState();
+            hideContextMenu();
+        }
+
+        function copyLink() {
+            const url = currentBookmark.dataset.url;
+            navigator.clipboard.writeText(url).then(() => {
+                alert('Enlace copiado al portapapeles: ' + url);
+            }).catch(err => {
+                alert('Error al copiar el enlace: ' + err);
+            });
+            hideContextMenu();
+        }
+
+        function reorderBookmarks() {
+            const bookmarks = Array.from(currentBookmark.parentElement.children);
+            if (bookmarks.length === 0) {
+                alert('No hay marcadores para reordenar.');
+                hideContextMenu();
+                return;
+            }
+
+            let bookmarkList = 'Ingresa el nuevo orden (números separados por comas, ej. 1,2,3):\n';
+            bookmarks.forEach((bm, index) => {
+                bookmarkList += `${index + 1}. ${bm.querySelector('span').textContent}\n`;
+            });
+
+            let newOrder = prompt(bookmarkList, bookmarks.map((_, index) => index + 1).join(','));
+            if (newOrder) {
+                const orderArray = newOrder.split(',').map(num => parseInt(num.trim()) - 1);
+                if (orderArray.length === bookmarks.length && orderArray.every(num => num >= 0 && num < bookmarks.length)) {
+                    const container = currentBookmark.parentElement;
+                    orderArray.forEach(index => container.appendChild(bookmarks[index]));
+                    saveState();
+                } else {
+                    alert('Orden inválido. Debe incluir todos los números de 1 a ' + bookmarks.length + ' sin repetir.');
+                }
+            }
             hideContextMenu();
         }
 
@@ -940,7 +981,7 @@
             const name = prompt('Introduce un nombre para el perfil:', 'Mi Perfil');
             if (name) {
                 const date = new Date().toISOString().slice(0, 10);
-                const filename = `Cocreta Speed Start - ${name} - ${date}.json`;
+                const filename = `Cobete Speed Start - ${name} - ${date}.json`;
                 const data = JSON.parse(localStorage.getItem('bookmarkState'));
                 const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
@@ -1037,13 +1078,11 @@
             return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
         }
 
-        // Manejo del botón de créditos
         document.getElementById('creditsBtn').addEventListener('click', () => {
             const modal = document.getElementById('creditsModal');
             modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
         });
 
-        // Cerrar el modal de créditos al hacer clic fuera
         document.addEventListener('click', (e) => {
             const modal = document.getElementById('creditsModal');
             const btn = document.getElementById('creditsBtn');
