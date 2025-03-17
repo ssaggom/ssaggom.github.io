@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cobete Speed Start 1.0</title>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/8579/8579561.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        .top-bar,
+        .top-bar .btn,
+        .top-bar label {
+            color: #fff;
+        }
+
+        .top-bar .background-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .top-bar input[type="url"] {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            width: 200px;
+            transition: width 0.3s;
+        }
+
+        .top-bar input[type="url"]:focus {
+            width: 300px;
+            outline: none;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        .btn {
+            padding: 8px;
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            width: 120px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        #iconSize {
+            accent-color: #3498db;
+        }
+
+        #boxesPerRow {
+            accent-color: #e74c3c;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+            gap: 25px;
+            padding: 80px 25px 25px;
+            max-width: 100%;
+        }
+
+        .box {
+            background: rgba(var(--box-bg-color, 255, 255, 255), var(--box-opacity, 0.1));
+            border-radius: 15px;
+            padding: 20px;
+            position: relative;
+            min-height: 280px;
+            transition: box-shadow 0.3s ease;
+            backdrop-filter: blur(var(--box-blur, 8px));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .box:hover {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .box-header h3 {
+            font-weight: 600;
+            padding: 5px 10px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .box-tools {
+            display: flex;
+            gap: 8px;
+        }
+
+        .box-btn {
+            background: none;
+            border: none;
+            font-size: 16px;
+            padding: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .bookmarks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .bookmark {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            padding: 10px;
+            background: rgba(var(--bookmark-bg-color, 255, 255, 255), var(--bookmark-opacity, 0.05));
+            border-radius: 10px;
+            transition: all 0.3s;
+            cursor: pointer;
+            max-width: 100%;
+            min-width: 0;
+        }
+
+        .bookmark:hover {
+            transform: scale(1.02);
+            background: rgba(var(--bookmark-bg-color, 255, 255, 255), calc(var(--bookmark-opacity, 0.05) + 0.05));
+        }
+
+        .bookmark img, .bookmark i {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            margin-right: 15px;
+            flex-shrink: 0;
+            max-width: 100%;
+            max-height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .bookmark img {
+            object-fit: cover;
+        }
+
+        .bookmark i {
+            font-size: 24px;
+            line-height: 32px;
+            text-align: center;
+        }
+
+        .bookmark span {
+            white-space: normal;
+            font-size: 14px;
+            line-height: 1.4;
+            flex-grow: 1;
+            min-width: 0;
+            text-align: left;
+        }
+
+        .context-menu {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 8px;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 2000;
+        }
+
+        .context-menu button {
+            display: block;
+            width: 100%;
+            padding: 5px 10px;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .context-menu button:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .pattern-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .pattern-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .pattern-btn[title]:hover:after {
+            content: attr(title);
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+        }
+
+        /* Patrones de Color */
+        .pattern1 { background: linear-gradient(135deg, #2c3e50, #3498db); }
+        .pattern2 { background: linear-gradient(135deg, #ff6b6b, #4ecdc4); }
+        .pattern3 { background: linear-gradient(135deg, #1a1a1a, #666); }
+        .pattern4 { background: linear-gradient(135deg, #2ecc71, #3498db); }
+        .pattern5 { background: linear-gradient(135deg, #8e44ad, #3498db); }
+        .pattern6 { background: linear-gradient(135deg, #222, #e74c3c); }
+        .pattern7 { background: linear-gradient(135deg, #f1c40f, #e67e22); }
+        .pattern8 { background: linear-gradient(135deg, #34495e, #9b59b6); }
+
+        /* Ajustar colores dentro de las cajas según el tema */
+        body.pattern1 .box h3,
+        body.pattern1 .box span,
+        body.pattern1 .box .box-btn {
+            color: #a8d0f5;
+        }
+        body.pattern1 .box i {
+            color: #85c1e9;
+        }
+        body.pattern1 .box .box-btn:hover {
+            color: #d6e6fa;
+        }
+
+        body.pattern2 .box h3,
+        body.pattern2 .box span,
+        body.pattern2 .box .box-btn {
+            color: #f7cac9;
+        }
+        body.pattern2 .box i {
+            color: #43938a;
+        }
+        body.pattern2 .box .box-btn:hover {
+            color: #fce4e3;
+        }
+
+        body.pattern3 .box h3,
+        body.pattern3 .box span,
+        body.pattern3 .box .box-btn {
+            color: #d5d5d5;
+        }
+        body.pattern3 .box i {
+            color: #b3b3b3;
+        }
+        body.pattern3 .box .box-btn:hover {
+            color: #e8e8e8;
+        }
+
+        body.pattern4 .box h3,
+        body.pattern4 .box span,
+        body.pattern4 .box .box-btn {
+            color: #3f6750;
+        }
+        body.pattern4 .box i {
+            color: #5494be;
+        }
+        body.pattern4 .box .box-btn:hover {
+            color: #99c2a6;
+        }
+
+        body.pattern5 .box h3,
+        body.pattern5 .box span,
+        body.pattern5 .box .box-btn {
+            color: #d7bde2;
+        }
+        body.pattern5 .box i {
+            color: #85c1e9;
+        }
+        body.pattern5 .box .box-btn:hover {
+            color: #e9d5f0;
+        }
+
+        body.pattern6 .box h3,
+        body.pattern6 .box span,
+        body.pattern6 .box .box-btn {
+            color: #f5b7b1;
+        }
+        body.pattern6 .box i {
+            color: #ff867c;
+        }
+        body.pattern6 .box .box-btn:hover {
+            color: #f9d0cc;
+        }
+
+        body.pattern7 .box h3,
+        body.pattern7 .box span,
+        body.pattern7 .box .box-btn {
+            color: #977f1e;
+        }
+        body.pattern7 .box i {
+            color: #cf711f;
+        }
+        body.pattern7 .box .box-btn:hover {
+            color: #f5d76e;
+        }
+
+        body.pattern8 .box h3,
+        body.pattern8 .box span,
+        body.pattern8 .box .box-btn {
+            color: #d2b4de;
+        }
+        body.pattern8 .box i {
+            color: #c39bd3;
+        }
+        body.pattern8 .box .box-btn:hover {
+            color: #e5cce9;
+        }
+
+        /* Clase para colores personalizados */
+        body.custom-colors .box h3,
+        body.custom-colors .box span,
+        body.custom-colors .box .box-btn {
+            color: var(--custom-text-color);
+        }
+        body.custom-colors .box i {
+            color: var(--custom-icon-color);
+        }
+        body.custom-colors .box .box-btn:hover {
+            color: var(--custom-hover-color);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 3000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .modal-content button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+            background: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+
+        .modal-content button.reset {
+            background: #e74c3c;
+        }
+
+        .modal-content label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        .modal-content input[type="color"] {
+            width: 100%;
+            height: 40px;
+            padding: 0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #blurValue, #boxOpacity, #bookmarkOpacity {
+            accent-color: #e74c3c;
+        }
+
+        .credits-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff; /* Añadido para que el ícono sea blanco */
+}
+
+        .credits-modal {
+            display: none;
+            position: fixed;
+            bottom: 60px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 2000;
+            width: 200px;
+            text-align: left;
+        }
+
+        .credits-modal p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .credits-modal a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .credits-modal a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .container { grid-template-columns: 1fr; }
+            .bookmarks { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+            .bookmark img, .bookmark i { width: 32px; height: 32px; font-size: 24px; margin-right: 10px; }
+            .top-bar { flex-direction: column; gap: 5px; padding: 10px; height: auto; }
+            .top-bar input[type="url"] { width: 100%; }
+            .slider-container { flex-direction: row; gap: 10px; width: auto; }
+            .credits-modal { width: 150px; right: 10px; bottom: 50px; }
+        }
+    </style>
+</head>
+<body class="pattern1">
+    <div class="top-bar">
+        <div class="background-controls">
+            <input type="url" id="backgroundInput" placeholder="Establecer URL de Fondo">
+            <button class="btn" id="setCustomColors" title="Colores Personalizados"><i class="fas fa-palette"></i></button>
+            <button class="btn" id="setBlur" title="Ajustar Estilo de Cajas"><i class="fas fa-eye"></i></button>
+            <button class="btn" id="clearBackground" title="Borrar Fondo"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="controls">
+            <button class="btn" id="addBox" title="Nueva Caja"><i class="fas fa-plus"></i></button>
+            <button class="btn" id="saveProfile" title="Guardar Perfil"><i class="fas fa-save"></i></button>
+            <input type="file" id="loadProfile" accept=".json" style="display: none;">
+            <label for="loadProfile" class="btn" title="Cargar Perfil"><i class="fas fa-upload"></i></label>
+            <div class="slider-container">
+                <input type="range" id="iconSize" min="32" max="96" value="48" title="Tamaño de Icono">
+                <input type="range" id="boxesPerRow" min="1" max="4" value="2" title="Cajas por Fila">
+            </div>
+            <button class="pattern-btn pattern1" title="Azul Medianoche" onclick="setPattern('pattern1')"></button>
+            <button class="pattern-btn pattern2" title="Arrecife de Coral" onclick="setPattern('pattern2')"></button>
+            <button class="pattern-btn pattern3" title="Pizarra Oscura" onclick="setPattern('pattern3')"></button>
+            <button class="pattern-btn pattern4" title="Mar Esmeralda" onclick="setPattern('pattern4')"></button>
+            <button class="pattern-btn pattern5" title="Ola Amatista" onclick="setPattern('pattern5')"></button>
+            <button class="pattern-btn pattern6" title="Noche Carmesí" onclick="setPattern('pattern6')"></button>
+            <button class="pattern-btn pattern7" title="Brillo del Atardecer" onclick="setPattern('pattern7')"></button>
+            <button class="pattern-btn pattern8" title="Púrpura Crepuscular" onclick="setPattern('pattern8')"></button>
+        </div>
+    </div>
+
+    <div class="container" id="container"></div>
+    <div class="context-menu" id="contextMenu">
+        <button onclick="editBookmark()">Editar</button>
+        <button onclick="deleteBookmark()">Eliminar</button>
+        <button onclick="duplicateBookmark()">Duplicar</button>
+        <button onclick="moveBookmark()">Mover</button>
+    </div>
+
+    <div class="modal" id="linkModal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Añadir Enlace</h2>
+            <input type="url" id="linkUrl" placeholder="URL">
+            <input type="text" id="linkTitle" placeholder="Título">
+            <input type="text" id="linkIcon" placeholder="Clase Font Awesome o URL de Imagen">
+            <button onclick="submitLink()">Guardar</button>
+            <button onclick="closeModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="modal" id="colorModal">
+        <div class="modal-content">
+            <h2>Colores Personalizados</h2>
+            <label>Color de Texto:</label>
+            <input type="color" id="textColor" value="#a8d0f5">
+            <label>Color de Iconos:</label>
+            <input type="color" id="iconColor" value="#85c1e9">
+            <label>Color al Pasar el Ratón:</label>
+            <input type="color" id="hoverColor" value="#d6e6fa">
+            <button onclick="applyCustomColors()">Aplicar</button>
+            <button onclick="closeColorModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <div class="modal" id="blurModal">
+        <div class="modal-content">
+            <h2>Ajustar Estilo de Cajas</h2>
+            <label>Desenfoque de Cajas (0-20px):</label>
+            <input type="range" id="blurValue" min="0" max="20" value="8">
+            <label>Transparencia de Cajas (0-1):</label>
+            <input type="range" id="boxOpacity" min="0" max="1" step="0.01" value="0.1">
+            <label>Color de Fondo de Cajas:</label>
+            <input type="color" id="boxColor" value="#ffffff">
+            <label>Transparencia de Marcadores (0-1):</label>
+            <input type="range" id="bookmarkOpacity" min="0" max="1" step="0.01" value="0.05">
+            <label>Color de Fondo de Marcadores:</label>
+            <input type="color" id="bookmarkColor" value="#ffffff">
+            <button onclick="applyStyles()">Aplicar</button>
+            <button class="reset" onclick="resetStyles()">Por Defecto</button>
+            <button onclick="closeBlurModal()">Cancelar</button>
+        </div>
+    </div>
+
+    <button class="btn credits-btn" id="creditsBtn" title="Créditos"><i class="fas fa-info-circle"></i></button>
+    <div class="credits-modal" id="creditsModal">
+        <p>Iconos: <a href="https://fontawesome.com" target="_blank">Font Awesome</a></p>
+        <p>Favicon: <a href="https://flaticon.com" target="_blank">Flaticon</a></p>
+        <p>Programación: <a href="https://xai.com" target="_blank">Grok</a></p>
+    </div>
+
+    <script>
+        let boxes = [];
+        let currentBookmark = null;
+        let currentBox = null;
+        let editMode = false;
+
+        function loadState() {
+            const saved = localStorage.getItem('bookmarkState');
+            if (saved) {
+                const data = JSON.parse(saved);
+                document.body.style.background = data.background || 'linear-gradient(135deg, #2c3e50, #3498db)';
+                document.body.className = data.pattern || 'pattern1';
+                if (data.customColors) {
+                    document.body.className = 'custom-colors';
+                    document.body.style.setProperty('--custom-text-color', data.customColors.text);
+                    document.body.style.setProperty('--custom-icon-color', data.customColors.icon);
+                    document.body.style.setProperty('--custom-hover-color', data.customColors.hover);
+                }
+                document.body.style.setProperty('--box-blur', data.blur || '8px');
+                document.body.style.setProperty('--box-opacity', data.boxOpacity || '0.1');
+                document.body.style.setProperty('--box-bg-color', data.boxBgColor || '255, 255, 255');
+                document.body.style.setProperty('--bookmark-opacity', data.bookmarkOpacity || '0.05');
+                document.body.style.setProperty('--bookmark-bg-color', data.bookmarkBgColor || '255, 255, 255');
+                document.getElementById('iconSize').value = data.iconSize || 48;
+                document.getElementById('boxesPerRow').value = data.boxesPerRow || 2;
+                updateIconSizes();
+                updateBoxLayout();
+                document.getElementById('container').innerHTML = '';
+                boxes = [];
+                data.boxes.forEach(boxData => {
+                    const box = createBox(boxData.title);
+                    boxData.bookmarks.forEach(bm => addBookmark(box, bm.url, bm.title, bm.icon));
+                });
+            } else {
+                for (let i = 0; i < 9; i++) createBox(`Caja ${i + 1}`);
+            }
+        }
+
+        function saveState() {
+            const data = {
+                boxes: boxes.map(box => ({
+                    title: box.querySelector('h3').textContent,
+                    bookmarks: Array.from(box.querySelectorAll('.bookmark')).map(b => ({
+                        url: b.dataset.url,
+                        title: b.querySelector('span').textContent,
+                        icon: b.querySelector('img')?.src || b.querySelector('i')?.className
+                    }))
+                })),
+                background: document.body.style.background,
+                pattern: document.body.className !== 'custom-colors' ? document.body.className : '',
+                customColors: document.body.className === 'custom-colors' ? {
+                    text: document.body.style.getPropertyValue('--custom-text-color'),
+                    icon: document.body.style.getPropertyValue('--custom-icon-color'),
+                    hover: document.body.style.getPropertyValue('--custom-hover-color')
+                } : null,
+                blur: document.body.style.getPropertyValue('--box-blur') || '8px',
+                boxOpacity: document.body.style.getPropertyValue('--box-opacity') || '0.1',
+                boxBgColor: document.body.style.getPropertyValue('--box-bg-color') || '255, 255, 255',
+                bookmarkOpacity: document.body.style.getPropertyValue('--bookmark-opacity') || '0.05',
+                bookmarkBgColor: document.body.style.getPropertyValue('--bookmark-bg-color') || '255, 255, 255',
+                iconSize: document.getElementById('iconSize').value,
+                boxesPerRow: document.getElementById('boxesPerRow').value
+            };
+            localStorage.setItem('bookmarkState', JSON.stringify(data));
+        }
+
+        function createBox(title = 'Nueva Caja') {
+            const box = document.createElement('div');
+            box.className = 'box';
+            box.innerHTML = `
+                <div class="box-header">
+                    <h3 contenteditable="true" onblur="saveState()">${title}</h3>
+                    <div class="box-tools">
+                        <button class="box-btn" title="Añadir Enlace" onclick="showLinkModal(this.parentElement.parentElement.parentElement)"><i class="fas fa-plus"></i></button>
+                        <button class="box-btn" title="Mover Caja" onclick="moveBox(this.parentElement.parentElement.parentElement)"><i class="fas fa-arrows-alt"></i></button>
+                        <button class="box-btn" title="Eliminar Caja" onclick="deleteBox(this.parentElement.parentElement.parentElement)"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="bookmarks" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+            `;
+            box.draggable = true;
+            box.addEventListener('dragstart', dragStart);
+            box.addEventListener('dragend', dragEnd);
+            document.getElementById('container').appendChild(box);
+            boxes.push(box);
+            saveState();
+            return box;
+        }
+
+        function deleteBox(box) {
+            const choice = prompt('Elige una acción:\n1. Eliminar caja y contenido\n2. Vaciar contenido\n(Cancelar para no hacer nada)', '1');
+            if (choice === '1') {
+                box.remove();
+                boxes = boxes.filter(b => b !== box);
+                saveState();
+            } else if (choice === '2') {
+                box.querySelector('.bookmarks').innerHTML = '';
+                saveState();
+            }
+        }
+
+        document.getElementById('addBox').addEventListener('click', () => createBox());
+
+        document.getElementById('backgroundInput').addEventListener('change', (e) => {
+            document.body.style.background = `url(${e.target.value}) no-repeat center/cover`;
+            document.body.className = '';
+            saveState();
+        });
+
+        document.getElementById('clearBackground').addEventListener('click', () => {
+            document.body.style.background = 'linear-gradient(135deg, #2c3e50, #3498db)';
+            document.body.className = 'pattern1';
+            document.getElementById('backgroundInput').value = '';
+            saveState();
+        });
+
+        function updateIconSizes() {
+            const size = Math.max(document.getElementById('iconSize').value, 32);
+            document.querySelectorAll('.bookmark img, .bookmark i').forEach(el => {
+                el.style.width = `${size}px`;
+                el.style.height = `${size}px`;
+                el.style.fontSize = `${size * 0.75}px`;
+                el.style.lineHeight = `${size}px`;
+            });
+        }
+
+        document.getElementById('iconSize').addEventListener('input', (e) => {
+            updateIconSizes();
+            saveState();
+        });
+
+        function updateBoxLayout() {
+            const boxesPerRow = document.getElementById('boxesPerRow').value;
+            const minWidth = 480;
+            document.querySelector('.container').style.gridTemplateColumns = 
+                `repeat(${boxesPerRow}, minmax(${minWidth}px, 1fr))`;
+        }
+
+        document.getElementById('boxesPerRow').addEventListener('input', (e) => {
+            updateBoxLayout();
+            saveState();
+        });
+
+        function showLinkModal(box, bookmark = null) {
+            currentBox = box;
+            const modal = document.getElementById('linkModal');
+            const title = document.getElementById('modalTitle');
+            if (bookmark) {
+                editMode = true;
+                currentBookmark = bookmark;
+                title.textContent = 'Editar Enlace';
+                document.getElementById('linkUrl').value = bookmark.dataset.url;
+                document.getElementById('linkTitle').value = bookmark.querySelector('span').textContent;
+                document.getElementById('linkIcon').value = bookmark.querySelector('img')?.src || bookmark.querySelector('i')?.className;
+            } else {
+                editMode = false;
+                title.textContent = 'Añadir Enlace';
+                document.getElementById('linkUrl').value = '';
+                document.getElementById('linkTitle').value = '';
+                document.getElementById('linkIcon').value = '';
+            }
+            modal.style.display = 'block';
+        }
+
+        function submitLink() {
+            const url = document.getElementById('linkUrl').value;
+            const title = document.getElementById('linkTitle').value || getTitle(url);
+            const icon = document.getElementById('linkIcon').value || getFavicon(url);
+            if (url) {
+                if (editMode && currentBookmark) {
+                    currentBookmark.dataset.url = url;
+                    currentBookmark.querySelector('span').textContent = title;
+                    const oldIcon = currentBookmark.querySelector('img, i');
+                    if (oldIcon) oldIcon.remove();
+                    const iconEl = icon.startsWith('fa') 
+                        ? `<i class="${icon}"></i>`
+                        : `<img src="${icon}" alt="icon">`;
+                    currentBookmark.insertAdjacentHTML('afterbegin', iconEl);
+                } else {
+                    addBookmark(currentBox, url, title, icon);
+                }
+                closeModal();
+                saveState();
+                updateIconSizes();
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('linkModal').style.display = 'none';
+        }
+
+        function addBookmark(box, url, title, icon) {
+            const bookmark = document.createElement('div');
+            bookmark.className = 'bookmark';
+            bookmark.draggable = true;
+            bookmark.dataset.url = url;
+            bookmark.innerHTML = `
+                ${icon.startsWith('fa') ? `<i class="${icon}"></i>` : `<img src="${icon}" alt="icon">`}
+                <span contenteditable="true" onblur="saveState()">${title}</span>
+            `;
+            bookmark.addEventListener('contextmenu', (e) => showContextMenu(e, bookmark));
+            bookmark.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'SPAN') {
+                    window.open(url, '_blank');
+                }
+            });
+            box.querySelector('.bookmarks').appendChild(bookmark);
+            updateIconSizes();
+        }
+
+        function moveBox(box) {
+            const position = prompt('Introduce la nueva posición (1-' + boxes.length + '):');
+            const pos = parseInt(position);
+            if (pos >= 1 && pos <= boxes.length) {
+                const container = document.getElementById('container');
+                const index = boxes.indexOf(box);
+                boxes.splice(index, 1);
+                boxes.splice(pos - 1, 0, box);
+                container.innerHTML = '';
+                boxes.forEach(b => container.appendChild(b));
+                saveState();
+            } else if (pos > boxes.length) {
+                const container = document.getElementById('container');
+                container.appendChild(box);
+                boxes = Array.from(container.children);
+                saveState();
+            }
+        }
+
+        function getFavicon(url) {
+            return `https://www.google.com/s2/favicons?domain=${url}&sz=64`;
+        }
+        function getTitle(url) {
+            return url.split('/')[2] || 'Marcador';
+        }
+
+        function showContextMenu(e, bookmark) {
+            e.preventDefault();
+            currentBookmark = bookmark;
+            const menu = document.getElementById('contextMenu');
+            menu.style.display = 'block';
+            menu.style.left = `${e.pageX}px`;
+            menu.style.top = `${e.pageY}px`;
+        }
+
+        function editBookmark() {
+            showLinkModal(currentBookmark.parentElement.parentElement, currentBookmark);
+            hideContextMenu();
+        }
+
+        function deleteBookmark() {
+            if (confirm('¿Eliminar marcador?')) {
+                currentBookmark.remove();
+                saveState();
+            }
+            hideContextMenu();
+        }
+
+        function duplicateBookmark() {
+            const clone = currentBookmark.cloneNode(true);
+            clone.addEventListener('contextmenu', (e) => showContextMenu(e, clone));
+            currentBookmark.parentElement.appendChild(clone);
+            saveState();
+            hideContextMenu();
+        }
+
+        function moveBookmark() {
+            if (boxes.length === 0) {
+                alert('No hay cajas a las que mover el marcador.');
+                hideContextMenu();
+                return;
+            }
+
+            let boxList = 'Selecciona una caja para mover el marcador:\n';
+            boxes.forEach((box, index) => {
+                const boxTitle = box.querySelector('h3').textContent;
+                boxList += `${index + 1}. ${boxTitle}\n`;
+            });
+
+            const choice = prompt(boxList, '1');
+            const selectedIndex = parseInt(choice) - 1;
+
+            if (isNaN(selectedIndex) || selectedIndex < 0 || selectedIndex >= boxes.length) {
+                alert('Selección inválida. Operación cancelada.');
+                hideContextMenu();
+                return;
+            }
+
+            const targetBox = boxes[selectedIndex];
+            const targetBookmarks = targetBox.querySelector('.bookmarks');
+            targetBookmarks.appendChild(currentBookmark);
+            saveState();
+            hideContextMenu();
+        }
+
+        function hideContextMenu() {
+            document.getElementById('contextMenu').style.display = 'none';
+        }
+
+        document.addEventListener('click', hideContextMenu);
+
+        function allowDrop(e) {
+            e.preventDefault();
+        }
+
+        function dragStart(e) {
+            e.dataTransfer.setData('text/plain', 'dragging');
+            e.target.style.opacity = '0.5';
+        }
+
+        function dragEnd(e) {
+            e.target.style.opacity = '1';
+            saveState();
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            const target = e.target.closest('.bookmarks');
+            if (target && currentBookmark) {
+                target.appendChild(currentBookmark);
+                saveState();
+            }
+        }
+
+        function setPattern(pattern) {
+            document.body.className = pattern;
+            document.body.style.background = '';
+            switch(pattern) {
+                case 'pattern1': document.body.style.background = 'linear-gradient(135deg, #2c3e50, #3498db)'; break;
+                case 'pattern2': document.body.style.background = 'linear-gradient(135deg, #ff6b6b, #4ecdc4)'; break;
+                case 'pattern3': document.body.style.background = 'linear-gradient(135deg, #1a1a1a, #666)'; break;
+                case 'pattern4': document.body.style.background = 'linear-gradient(135deg, #2ecc71, #3498db)'; break;
+                case 'pattern5': document.body.style.background = 'linear-gradient(135deg, #8e44ad, #3498db)'; break;
+                case 'pattern6': document.body.style.background = 'linear-gradient(135deg, #222, #e74c3c)'; break;
+                case 'pattern7': document.body.style.background = 'linear-gradient(135deg, #f1c40f, #e67e22)'; break;
+                case 'pattern8': document.body.style.background = 'linear-gradient(135deg, #34495e, #9b59b6)'; break;
+            }
+            document.body.style.removeProperty('--custom-text-color');
+            document.body.style.removeProperty('--custom-icon-color');
+            document.body.style.removeProperty('--custom-hover-color');
+            document.getElementById('backgroundInput').value = '';
+            saveState();
+        }
+
+        document.getElementById('saveProfile').addEventListener('click', () => {
+            const name = prompt('Introduce un nombre para el perfil:', 'Mi Perfil');
+            if (name) {
+                const date = new Date().toISOString().slice(0, 10);
+                const filename = `Cocreta Speed Start - ${name} - ${date}.json`;
+                const data = JSON.parse(localStorage.getItem('bookmarkState'));
+                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
+            }
+        });
+
+        document.getElementById('loadProfile').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const data = JSON.parse(event.target.result);
+                localStorage.setItem('bookmarkState', JSON.stringify(data));
+                loadState();
+            };
+            reader.readAsText(file);
+        });
+
+        document.getElementById('setCustomColors').addEventListener('click', () => {
+            document.getElementById('colorModal').style.display = 'block';
+        });
+
+        function closeColorModal() {
+            document.getElementById('colorModal').style.display = 'none';
+        }
+
+        function applyCustomColors() {
+            const textColor = document.getElementById('textColor').value;
+            const iconColor = document.getElementById('iconColor').value;
+            const hoverColor = document.getElementById('hoverColor').value;
+            document.body.className = 'custom-colors';
+            document.body.style.setProperty('--custom-text-color', textColor);
+            document.body.style.setProperty('--custom-icon-color', iconColor);
+            document.body.style.setProperty('--custom-hover-color', hoverColor);
+            saveState();
+            closeColorModal();
+        }
+
+        document.getElementById('setBlur').addEventListener('click', () => {
+            document.getElementById('blurModal').style.display = 'block';
+            document.getElementById('blurValue').value = parseInt(document.body.style.getPropertyValue('--box-blur') || '8');
+            document.getElementById('boxOpacity').value = parseFloat(document.body.style.getPropertyValue('--box-opacity') || '0.1');
+            document.getElementById('bookmarkOpacity').value = parseFloat(document.body.style.getPropertyValue('--bookmark-opacity') || '0.05');
+            document.getElementById('boxColor').value = rgbToHex(document.body.style.getPropertyValue('--box-bg-color') || '255, 255, 255');
+            document.getElementById('bookmarkColor').value = rgbToHex(document.body.style.getPropertyValue('--bookmark-bg-color') || '255, 255, 255');
+        });
+
+        function closeBlurModal() {
+            document.getElementById('blurModal').style.display = 'none';
+        }
+
+        function applyStyles() {
+            const blurValue = document.getElementById('blurValue').value;
+            const boxOpacity = document.getElementById('boxOpacity').value;
+            const bookmarkOpacity = document.getElementById('bookmarkOpacity').value;
+            const boxColor = hexToRgb(document.getElementById('boxColor').value);
+            const bookmarkColor = hexToRgb(document.getElementById('bookmarkColor').value);
+            document.body.style.setProperty('--box-blur', `${blurValue}px`);
+            document.body.style.setProperty('--box-opacity', boxOpacity);
+            document.body.style.setProperty('--box-bg-color', boxColor);
+            document.body.style.setProperty('--bookmark-opacity', bookmarkOpacity);
+            document.body.style.setProperty('--bookmark-bg-color', bookmarkColor);
+            saveState();
+            closeBlurModal();
+        }
+
+        function resetStyles() {
+            document.getElementById('blurValue').value = 8;
+            document.getElementById('boxOpacity').value = 0.1;
+            document.getElementById('bookmarkOpacity').value = 0.05;
+            document.getElementById('boxColor').value = '#ffffff';
+            document.getElementById('bookmarkColor').value = '#ffffff';
+            document.body.style.setProperty('--box-blur', '8px');
+            document.body.style.setProperty('--box-opacity', '0.1');
+            document.body.style.setProperty('--box-bg-color', '255, 255, 255');
+            document.body.style.setProperty('--bookmark-opacity', '0.05');
+            document.body.style.setProperty('--bookmark-bg-color', '255, 255, 255');
+            saveState();
+            closeBlurModal();
+        }
+
+        function hexToRgb(hex) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `${r}, ${g}, ${b}`;
+        }
+
+        function rgbToHex(rgb) {
+            const [r, g, b] = rgb.split(',').map(val => parseInt(val.trim()));
+            return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+        }
+
+        // Manejo del botón de créditos
+        document.getElementById('creditsBtn').addEventListener('click', () => {
+            const modal = document.getElementById('creditsModal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // Cerrar el modal de créditos al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            const modal = document.getElementById('creditsModal');
+            const btn = document.getElementById('creditsBtn');
+            if (!modal.contains(e.target) && !btn.contains(e.target)) {
+                modal.style.display = 'none';
+            }
+        });
+
+        loadState();
+    </script>
+</body>
+</html>
