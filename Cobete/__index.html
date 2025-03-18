@@ -420,57 +420,39 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.95);
+            background: white;
             padding: 25px;
             border-radius: 15px;
             width: 90%;
             max-width: 400px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(10px);
         }
 
-        .modal-content h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .modal-content input,
-        .modal-content select {
+        .modal-content input {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
             border: 1px solid #ddd;
             border-radius: 5px;
-            background: rgba(255, 255, 255, 0.8);
         }
 
         .modal-content button {
             padding: 10px 20px;
-            margin: 5px 5px 0 0;
+            margin-top: 10px;
             border: none;
             border-radius: 5px;
             background: #3498db;
             color: white;
             cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .modal-content button:hover {
-            background: #2980b9;
         }
 
         .modal-content button.reset {
             background: #e74c3c;
         }
 
-        .modal-content button.reset:hover {
-            background: #c0392b;
-        }
-
         .modal-content label {
             display: block;
             margin: 10px 0 5px;
-            color: #555;
         }
 
         .modal-content input[type="color"] {
@@ -523,52 +505,6 @@
             text-decoration: underline;
         }
 
-        .profile-list {
-            max-height: 300px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
-
-        .profile-item {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 8px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .profile-item:hover {
-            background: rgba(255, 255, 255, 1);
-        }
-
-        .profile-item.active {
-            background: rgba(52, 152, 219, 0.2);
-            border: 2px solid #3498db;
-        }
-
-        .profile-item img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 15px;
-            object-fit: cover;
-        }
-
-        .profile-item span {
-            flex-grow: 1;
-            font-size: 16px;
-            color: #333;
-        }
-
-        .profile-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
         @media (max-width: 600px) {
             .container { grid-template-columns: 1fr; }
             .bookmarks { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
@@ -577,9 +513,6 @@
             .top-bar input[type="url"] { width: 100%; }
             .slider-container { flex-direction: row; gap: 10px; width: auto; }
             .credits-modal { width: 150px; right: 10px; bottom: 50px; }
-            .modal-content { max-width: 300px; }
-            .profile-item img { width: 32px; height: 32px; }
-            .profile-item span { font-size: 14px; }
         }
     </style>
 </head>
@@ -596,7 +529,6 @@
             <button class="btn" id="saveProfile" title="Guardar Perfil"><i class="fas fa-save"></i></button>
             <input type="file" id="loadProfile" accept=".json" style="display: none;">
             <label for="loadProfile" class="btn" title="Cargar Perfil"><i class="fas fa-upload"></i></label>
-            <button class="btn" id="manageProfiles" title="Gestionar Perfiles"><i class="fas fa-users"></i></button>
             <div class="slider-container">
                 <input type="range" id="iconSize" min="32" max="96" value="48" title="Tamaño de Icono">
                 <input type="range" id="boxesPerRow" min="1" max="4" value="2" title="Cajas por Fila">
@@ -666,24 +598,12 @@
         </div>
     </div>
 
-    <div class="modal" id="profileModal">
-        <div class="modal-content">
-            <h2>Gestionar Perfiles</h2>
-            <div class="profile-list" id="profileList"></div>
-            <div class="profile-actions">
-                <button onclick="createNewProfile()">Nuevo Perfil</button>
-                <button onclick="renameProfile()">Renombrar</button>
-                <button class="reset" onclick="deleteProfile()">Eliminar</button>
-                <button onclick="closeProfileModal()">Cerrar</button>
-            </div>
-        </div>
-    </div>
-
     <button class="btn credits-btn" id="creditsBtn" title="Créditos"><i class="fas fa-info-circle"></i></button>
     <div class="credits-modal" id="creditsModal">
         <p>Iconos: <a href="https://fontawesome.com" target="_blank">Font Awesome</a></p>
         <p>Favicon: <a href="https://flaticon.com" target="_blank">Flaticon</a></p>
         <p>Programación: <a href="https://xai.com" target="_blank">Grok</a></p>
+        <p><i>Versión 1.1</i></p>
     </div>
 
     <script>
@@ -691,117 +611,26 @@
         let currentBookmark = null;
         let currentBox = null;
         let editMode = false;
-        let currentProfile = localStorage.getItem('lastProfile') || 'default'; // Cargar el último perfil usado
 
-        // IndexedDB setup
-        const dbName = "CobeteSpeedStartDB";
-        const dbVersion = 2; // Versión incrementada para migración
-        let db;
-
-        const request = indexedDB.open(dbName, dbVersion);
-        request.onerror = (event) => console.error("Error opening IndexedDB:", event);
-        request.onsuccess = (event) => {
-            db = event.target.result;
-            loadState(currentProfile); // Cargar el perfil guardado al iniciar
-            loadProfiles();
-        };
-        request.onupgradeneeded = (event) => {
-            db = event.target.result;
-            let store;
-            if (event.oldVersion < 1) {
-                // Crear el almacén si es la primera vez
-                store = db.createObjectStore("profiles", { keyPath: "name" });
-                store.createIndex("name", "name", { unique: true });
-                store.put({ 
-                    name: "default", 
-                    state: getDefaultState(), 
-                    avatar: "https://robohash.org/default.png?size=40x40" 
-                });
-            } else {
-                // Actualizar el almacén existente
-                store = event.target.transaction.objectStore("profiles");
-            }
-            if (event.oldVersion < 2) {
-                // Migración para la versión 2: asignar avatares a perfiles existentes
-                store.openCursor().onsuccess = (e) => {
-                    const cursor = e.target.result;
-                    if (cursor) {
-                        const profile = cursor.value;
-                        if (!profile.avatar) {
-                            profile.avatar = `https://robohash.org/${profile.name}.png?size=40x40`;
-                            cursor.update(profile);
-                        }
-                        cursor.continue();
-                    }
-                };
-            }
-        };
-
-        function getDefaultState() {
-            return {
-                boxes: Array(9).fill().map((_, i) => ({ title: `Caja ${i + 1}`, bookmarks: [] })),
-                background: 'linear-gradient(135deg, #2c3e50, #3498db)',
-                pattern: 'pattern1',
-                customColors: null,
-                blur: '8px',
-                boxOpacity: '0.1',
-                boxBgColor: '255, 255, 255',
-                bookmarkOpacity: '0.05',
-                bookmarkBgColor: '255, 255, 255',
-                iconSize: '48',
-                boxesPerRow: '2'
-            };
-        }
-
-        function loadProfiles() {
-            const transaction = db.transaction(["profiles"], "readonly");
-            const store = transaction.objectStore("profiles");
-            const request = store.getAll();
-            request.onsuccess = (event) => {
-                const profiles = event.target.result;
-                const list = document.getElementById('profileList');
-                list.innerHTML = '';
-                profiles.forEach(profile => {
-                    const item = document.createElement('div');
-                    item.className = `profile-item ${profile.name === currentProfile ? 'active' : ''}`;
-                    item.dataset.name = profile.name;
-                    item.innerHTML = `
-                        <img src="${profile.avatar}" alt="${profile.name}">
-                        <span>${profile.name}</span>
-                    `;
-                    item.addEventListener('click', () => {
-                        document.querySelectorAll('.profile-item').forEach(el => el.classList.remove('active'));
-                        item.classList.add('active');
-                        currentProfile = profile.name;
-                        localStorage.setItem('lastProfile', currentProfile); // Guardar el perfil activo
-                        loadState(currentProfile);
-                    });
-                    list.appendChild(item);
-                });
-            };
-        }
-
-        function loadState(profileName) {
-            const transaction = db.transaction(["profiles"], "readonly");
-            const store = transaction.objectStore("profiles");
-            const request = store.get(profileName);
-            request.onsuccess = (event) => {
-                const data = event.target.result?.state || getDefaultState();
-                document.body.style.background = data.background;
-                document.body.className = data.pattern;
+        function loadState() {
+            const saved = localStorage.getItem('bookmarkState');
+            if (saved) {
+                const data = JSON.parse(saved);
+                document.body.style.background = data.background || 'linear-gradient(135deg, #2c3e50, #3498db)';
+                document.body.className = data.pattern || 'pattern1';
                 if (data.customColors) {
                     document.body.className = 'custom-colors';
                     document.body.style.setProperty('--custom-text-color', data.customColors.text);
                     document.body.style.setProperty('--custom-icon-color', data.customColors.icon);
                     document.body.style.setProperty('--custom-hover-color', data.customColors.hover);
                 }
-                document.body.style.setProperty('--box-blur', data.blur);
-                document.body.style.setProperty('--box-opacity', data.boxOpacity);
-                document.body.style.setProperty('--box-bg-color', data.boxBgColor);
-                document.body.style.setProperty('--bookmark-opacity', data.bookmarkOpacity);
-                document.body.style.setProperty('--bookmark-bg-color', data.bookmarkBgColor);
-                document.getElementById('iconSize').value = data.iconSize;
-                document.getElementById('boxesPerRow').value = data.boxesPerRow;
+                document.body.style.setProperty('--box-blur', data.blur || '8px');
+                document.body.style.setProperty('--box-opacity', data.boxOpacity || '0.1');
+                document.body.style.setProperty('--box-bg-color', data.boxBgColor || '255, 255, 255');
+                document.body.style.setProperty('--bookmark-opacity', data.bookmarkOpacity || '0.05');
+                document.body.style.setProperty('--bookmark-bg-color', data.bookmarkBgColor || '255, 255, 255');
+                document.getElementById('iconSize').value = data.iconSize || 48;
+                document.getElementById('boxesPerRow').value = data.boxesPerRow || 2;
                 updateIconSizes();
                 updateBoxLayout();
                 document.getElementById('container').innerHTML = '';
@@ -810,7 +639,9 @@
                     const box = createBox(boxData.title);
                     boxData.bookmarks.forEach(bm => addBookmark(box, bm.url, bm.title, bm.icon));
                 });
-            };
+            } else {
+                for (let i = 0; i < 9; i++) createBox(`Caja ${i + 1}`);
+            }
         }
 
         function saveState() {
@@ -838,13 +669,7 @@
                 iconSize: document.getElementById('iconSize').value,
                 boxesPerRow: document.getElementById('boxesPerRow').value
             };
-            const transaction = db.transaction(["profiles"], "readwrite");
-            const store = transaction.objectStore("profiles");
-            const request = store.get(currentProfile);
-            request.onsuccess = (event) => {
-                const profile = event.target.result;
-                store.put({ name: currentProfile, state: data, avatar: profile.avatar });
-            };
+            localStorage.setItem('bookmarkState', JSON.stringify(data));
         }
 
         function createBox(title = 'Nueva Caja') {
@@ -1172,22 +997,17 @@
         }
 
         document.getElementById('saveProfile').addEventListener('click', () => {
-            const name = prompt('Introduce un nombre para exportar el perfil:', currentProfile);
+            const name = prompt('Introduce un nombre para el perfil:', 'Mi Perfil');
             if (name) {
                 const date = new Date().toISOString().slice(0, 10);
                 const filename = `Cobete Speed Start - ${name} - ${date}.json`;
-                const transaction = db.transaction(["profiles"], "readonly");
-                const store = transaction.objectStore("profiles");
-                const request = store.get(currentProfile);
-                request.onsuccess = (event) => {
-                    const data = event.target.result.state;
-                    const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = filename;
-                    a.click();
-                };
+                const data = JSON.parse(localStorage.getItem('bookmarkState'));
+                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                a.click();
             }
         });
 
@@ -1196,19 +1016,8 @@
             const reader = new FileReader();
             reader.onload = (event) => {
                 const data = JSON.parse(event.target.result);
-                const newProfileName = prompt('Introduce un nombre para el perfil importado:', 'Imported');
-                if (newProfileName) {
-                    const avatarUrl = `https://robohash.org/${newProfileName}.png?size=40x40`;
-                    const transaction = db.transaction(["profiles"], "readwrite");
-                    const store = transaction.objectStore("profiles");
-                    store.put({ name: newProfileName, state: data, avatar: avatarUrl });
-                    transaction.oncomplete = () => {
-                        currentProfile = newProfileName;
-                        localStorage.setItem('lastProfile', currentProfile); // Guardar el nuevo perfil como último usado
-                        loadProfiles();
-                        loadState(currentProfile);
-                    };
-                }
+                localStorage.setItem('bookmarkState', JSON.stringify(data));
+                loadState();
             };
             reader.readAsText(file);
         });
@@ -1301,91 +1110,7 @@
             }
         });
 
-        // Profile management
-        document.getElementById('manageProfiles').addEventListener('click', () => {
-            document.getElementById('profileModal').style.display = 'block';
-            loadProfiles();
-        });
-
-        function closeProfileModal() {
-            document.getElementById('profileModal').style.display = 'none';
-        }
-
-        function createNewProfile() {
-            const newProfileName = prompt('Introduce un nombre para el nuevo perfil:');
-            if (newProfileName && newProfileName !== 'default') {
-                const avatarUrl = `https://robohash.org/${newProfileName}.png?size=40x40`;
-                const transaction = db.transaction(["profiles"], "readwrite");
-                const store = transaction.objectStore("profiles");
-                store.put({ 
-                    name: newProfileName, 
-                    state: getDefaultState(), 
-                    avatar: avatarUrl 
-                });
-                transaction.oncomplete = () => {
-                    currentProfile = newProfileName;
-                    localStorage.setItem('lastProfile', currentProfile); // Guardar como último perfil
-                    loadProfiles();
-                    loadState(currentProfile);
-                    closeProfileModal();
-                };
-            }
-        }
-
-        function renameProfile() {
-            const activeItem = document.querySelector('.profile-item.active');
-            if (!activeItem) {
-                alert('Selecciona un perfil primero.');
-                return;
-            }
-            const oldName = activeItem.dataset.name;
-            if (oldName === 'default') {
-                alert('No se puede renombrar el perfil por defecto.');
-                return;
-            }
-            const newName = prompt('Introduce un nuevo nombre para el perfil:', oldName);
-            if (newName && newName !== oldName && newName !== 'default') {
-                const transaction = db.transaction(["profiles"], "readwrite");
-                const store = transaction.objectStore("profiles");
-                const request = store.get(oldName);
-                request.onsuccess = (event) => {
-                    const profile = event.target.result;
-                    const newAvatar = `https://robohash.org/${newName}.png?size=40x40`;
-                    store.delete(oldName);
-                    store.put({ name: newName, state: profile.state, avatar: newAvatar });
-                    transaction.oncomplete = () => {
-                        currentProfile = newName;
-                        localStorage.setItem('lastProfile', currentProfile); // Actualizar el último perfil
-                        loadProfiles();
-                    };
-                };
-            }
-        }
-
-        function deleteProfile() {
-            const activeItem = document.querySelector('.profile-item.active');
-            if (!activeItem) {
-                alert('Selecciona un perfil primero.');
-                return;
-            }
-            const profileName = activeItem.dataset.name;
-            if (profileName === 'default') {
-                alert('No se puede eliminar el perfil por defecto.');
-                return;
-            }
-            if (confirm(`¿Eliminar el perfil "${profileName}"?`)) {
-                const transaction = db.transaction(["profiles"], "readwrite");
-                const store = transaction.objectStore("profiles");
-                store.delete(profileName);
-                transaction.oncomplete = () => {
-                    currentProfile = 'default';
-                    localStorage.setItem('lastProfile', currentProfile); // Volver a 'default' y guardar
-                    loadProfiles();
-                    loadState(currentProfile);
-                    closeProfileModal();
-                };
-            }
-        }
+        loadState();
     </script>
 </body>
 </html>
