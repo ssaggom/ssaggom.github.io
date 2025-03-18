@@ -189,7 +189,17 @@
             background: rgba(var(--bookmark-bg-color, 255, 255, 255), calc(var(--bookmark-opacity, 0.05) + 0.05));
         }
 
-        .bookmark img, .bookmark i {
+        .bookmark-link {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            text-decoration: none;
+            color: inherit;
+            width: 100%;
+            height: 100%;
+        }
+
+        .bookmark-link img, .bookmark-link i {
             width: 32px;
             height: 32px;
             border-radius: 8px;
@@ -202,17 +212,17 @@
             justify-content: center;
         }
 
-        .bookmark img {
+        .bookmark-link img {
             object-fit: cover;
         }
 
-        .bookmark i {
+        .bookmark-link i {
             font-size: 24px;
             line-height: 32px;
             text-align: center;
         }
 
-        .bookmark span {
+        .bookmark-link span {
             white-space: normal;
             font-size: 14px;
             line-height: 1.4;
@@ -498,7 +508,7 @@
         @media (max-width: 600px) {
             .container { grid-template-columns: 1fr; }
             .bookmarks { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
-            .bookmark img, .bookmark i { width: 32px; height: 32px; font-size: 24px; margin-right: 10px; }
+            .bookmark-link img, .bookmark-link i { width: 32px; height: 32px; font-size: 24px; margin-right: 10px; }
             .top-bar { flex-direction: column; gap: 5px; padding: 10px; height: auto; }
             .top-bar input[type="url"] { width: 100%; }
             .slider-container { flex-direction: row; gap: 10px; width: auto; }
@@ -593,6 +603,7 @@
         <p>Iconos: <a href="https://fontawesome.com" target="_blank">Font Awesome</a></p>
         <p>Favicon: <a href="https://flaticon.com" target="_blank">Flaticon</a></p>
         <p>Programación: <a href="https://xai.com" target="_blank">Grok</a></p>
+        <p><i>Versión 1.1</i></p>
     </div>
 
     <script>
@@ -713,7 +724,7 @@
 
         function updateIconSizes() {
             const size = Math.max(document.getElementById('iconSize').value, 32);
-            document.querySelectorAll('.bookmark img, .bookmark i').forEach(el => {
+            document.querySelectorAll('.bookmark-link img, .bookmark-link i').forEach(el => {
                 el.style.width = `${size}px`;
                 el.style.height = `${size}px`;
                 el.style.fontSize = `${size * 0.75}px`;
@@ -772,7 +783,8 @@
                     const iconEl = icon.startsWith('fa') 
                         ? `<i class="${icon}"></i>`
                         : `<img src="${icon}" alt="icon">`;
-                    currentBookmark.insertAdjacentHTML('afterbegin', iconEl);
+                    currentBookmark.querySelector('.bookmark-link').insertAdjacentHTML('afterbegin', iconEl);
+                    currentBookmark.querySelector('.bookmark-link').href = url;
                 } else {
                     addBookmark(currentBox, url, title, icon);
                 }
@@ -792,13 +804,20 @@
             bookmark.draggable = true;
             bookmark.dataset.url = url;
             bookmark.innerHTML = `
-                ${icon.startsWith('fa') ? `<i class="${icon}"></i>` : `<img src="${icon}" alt="icon">`}
-                <span contenteditable="true" spellcheck="false" onblur="saveState()">${title}</span>
+                <a href="${url}" target="_blank" class="bookmark-link">
+                    ${icon.startsWith('fa') ? `<i class="${icon}"></i>` : `<img src="${icon}" alt="icon">`}
+                    <span contenteditable="true" spellcheck="false" onblur="saveState()">${title}</span>
+                </a>
             `;
             bookmark.addEventListener('contextmenu', (e) => showContextMenu(e, bookmark));
             bookmark.addEventListener('click', (e) => {
-                if (e.target.tagName !== 'SPAN') {
-                    window.open(url, '_blank');
+                if (e.target.tagName === 'SPAN' || e.button !== 0) return;
+                e.preventDefault();
+                window.open(url, '_blank');
+            });
+            bookmark.addEventListener('mousedown', (e) => {
+                if (e.button === 1) {
+                    // El <a> maneja el clic central nativamente
                 }
             });
             box.querySelector('.bookmarks').appendChild(bookmark);
@@ -864,7 +883,7 @@
 
         function moveBookmark() {
             if (boxes.length === 0) {
- کوتاه:                alert('No hay cajas a las que mover el marcador.');
+                alert('No hay cajas a las que mover el marcador.');
                 hideContextMenu();
                 return;
             }
