@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operación A.L.T.E.A.</title>
+    
+    <!-- ESTILOS CSS CON EL NUEVO OVERLAY -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+
+        :root {
+            --bg-color: #0d0d0d;
+            --text-color: #00ff41;
+            --accent-color: #ff0000;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Roboto Mono', monospace; 
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease-in;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+        }
+        
+        #decrypted-text {
+            min-height: 150px; 
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .pantalla { display: none; }
+        .pantalla.activa { display: block; }
+        h1, h2 { text-transform: uppercase; }
+
+        button {
+            background: transparent;
+            border: 2px solid var(--text-color);
+            color: var(--text-color);
+            padding: 15px 30px;
+            font-family: inherit;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 10px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        button:hover {
+            background-color: var(--text-color);
+            color: var(--bg-color);
+        }
+        
+        #gallina-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color); align-items: center;
+            justify-content: center; z-index: 100;
+        }
+        
+        #gallina-overlay.activa { display: flex; }
+        #gallina-overlay h1 { font-size: 20vw; color: var(--accent-color); animation: blink 0.5s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+
+        #altea-grid {
+            display: grid; grid-template-columns: repeat(5, 1fr);
+            gap: 10px; margin: 30px auto; max-width: 400px;
+        }
+
+        .letter-box {
+            border: 2px solid var(--text-color); padding: 20px; font-size: 2em;
+            cursor: pointer; transition: background-color 0.2s, color 0.2s; user-select: none;
+        }
+        .letter-box.selected { background-color: var(--text-color); color: var(--bg-color); }
+
+        /* --- NUEVOS ESTILOS PARA LA INVITACIÓN A PANTALLA COMPLETA --- */
+        #invitacion-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85); /* Fondo oscuro semitransparente */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            cursor: pointer; /* Indica que se puede hacer clic para cerrar */
+            opacity: 0; /* Empieza invisible para la transición */
+            transition: opacity 0.4s ease-in-out;
+        }
+        
+        #invitacion-overlay.activa {
+            opacity: 1;
+        }
+        
+        #invitacion-overlay img {
+            max-width: 90vw; /* Ocupa como máximo el 90% del ancho de la pantalla */
+            max-height: 90vh; /* Ocupa como máximo el 90% del alto de la pantalla */
+            border: 3px solid var(--text-color);
+            box-shadow: 0 0 25px rgba(0, 255, 65, 0.5); /* Añade un brillo verde épico */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CONTENIDO HTML CON EL NUEVO OVERLAY DE INVITACIÓN -->
+    <div class="container">
+        <div id="pantalla-1" class="pantalla activa">
+            <p id="decrypted-text"></p>
+            <div id="botones-mision" style="display: none;">
+                <h2>¿Decide aceptar la misión?</h2>
+                <button onclick="aceptarMision()">SÍ</button>
+                <button onclick="rechazarMision()">NO</button>
+            </div>
+        </div>
+        <div id="pantalla-2" class="pantalla">
+            <h2>Acceso de Libre Tránsito, Exposición y Actuación (A.L.T.E.A)</h2>
+            <p>Ante una misión de este calibre, nuestra agencia solo puede contar con los mejores agentes posibles. Demuestre que sabe a quién deberá proteger durante su trabajo.</p>
+            <p id="altea-feedback" style="color: var(--accent-color); height: 20px;"></p>
+            <div id="altea-grid">
+                <div class="letter-box" onclick="seleccionarLetra('A', this)">A</div><div class="letter-box" onclick="seleccionarLetra('N', this)">N</div><div class="letter-box" onclick="seleccionarLetra('T', this)">T</div><div class="letter-box" onclick="seleccionarLetra('C', this)">C</div><div class="letter-box" onclick="seleccionarLetra('A', this)">A</div><div class="letter-box" onclick="seleccionarLetra('S', this)">S</div><div class="letter-box" onclick="seleccionarLetra('L', this)">L</div><div class="letter-box" onclick="seleccionarLetra('D', this)">D</div><div class="letter-box" onclick="seleccionarLetra('E', this)">E</div><div class="letter-box" onclick="seleccionarLetra('O', this)">O</div>
+            </div>
+        </div>
+        <div id="pantalla-3" class="pantalla">
+            <h2>A.L.T.E.A. superado. La misión es suya, agente.</h2>
+            <p>Le deseamos la mejor de las suertes. Si desea tener éxito en su misión, descargue y lea cuidadosamente el dossier. Tras su lectura, siga el protocolo habitual y proceda a quemar el documento y el dispositivo electrónico donde lo haya visualizado.</p>
+            <!-- Este botón ahora activa el overlay -->
+            <button onclick="mostrarInvitacionOverlay()">ACCEDER AL DOSSIER</button>
+        </div>
+    </div>
+    
+    <!-- Overlays que flotan sobre todo -->
+    <div id="gallina-overlay" class="pantalla"><h1>GALLINA</h1></div>
+
+    <!-- NUEVO: Overlay para la invitación final -->
+    <div id="invitacion-overlay" class="pantalla" onclick="cerrarInvitacionOverlay()">
+        <img src="invitacion.png" alt="Invitación clasificada">
+    </div>
+
+
+    <!-- JAVASCRIPT ACTUALIZADO -->
+    <script>
+        const pantallas = document.querySelectorAll('.pantalla');
+        function mostrarPantalla(id) {
+            pantallas.forEach(p => p.classList.remove('activa'));
+            // Los overlays no usan la clase 'activa', se manejan diferente
+            if (id !== 'invitacion-overlay' && id !== 'gallina-overlay') {
+                document.getElementById(id).classList.add('activa');
+            }
+        }
+        
+        const textoMision = "Debido a la escasez de activos en el terreno nos vemos obligados a acudir a usted para encomendarle un nuevo trabajo. La misión, si decide aceptarla, será peligrosa y no contará con nuestra ayuda en el terreno. En caso de detención o secuestro, nuestra organización negará cualquier conocimiento de usted y sus actos. A cambio de ello, disfrutará de la mejor de las compañías. Y probablemente podrá comerse alguna croqueta.";
+        const elementoTexto = document.getElementById('decrypted-text');
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"; 
+        const botonesMision = document.getElementById('botones-mision');
+
+        function decryptEffect(element, text, onComplete) {
+            let iteration = 0;
+            if (window.decryptInterval) clearInterval(window.decryptInterval);
+            window.decryptInterval = setInterval(() => {
+                element.innerText = text.split("").map((letter, index) => {
+                    if(index < iteration) return text[index];
+                    if(text[index] === ' ') return ' ';
+                    return chars[Math.floor(Math.random() * chars.length)];
+                }).join("");
+                if(iteration >= text.length) { clearInterval(window.decryptInterval); if (onComplete) onComplete(); }
+                iteration += 1; 
+            }, 50); 
+        }
+        
+        window.onload = function() {
+            document.body.style.opacity = 1;
+            decryptEffect(elementoTexto, textoMision, () => {
+                botonesMision.style.display = 'block';
+            });
+        };
+
+        function aceptarMision() { mostrarPantalla('pantalla-2'); }
+        function rechazarMision() {
+            document.getElementById('gallina-overlay').classList.add('activa');
+            setTimeout(() => {
+                document.getElementById('gallina-overlay').classList.remove('activa');
+                resetAltea(); 
+                mostrarPantalla('pantalla-1');
+                decryptEffect(elementoTexto, textoMision, () => { botonesMision.style.display = 'block'; });
+            }, 3000);
+        }
+
+        let secuenciaSeleccionada = [];
+        const secuenciaCorrecta = ['A', 'L', 'T', 'E', 'A'];
+        const letterBoxes = document.querySelectorAll('.letter-box');
+        const feedbackEl = document.getElementById('altea-feedback');
+        function seleccionarLetra(letra, elemento) {
+            if (secuenciaSeleccionada.length < 5 && !elemento.classList.contains('selected')) {
+                secuenciaSeleccionada.push(letra);
+                elemento.classList.add('selected');
+                feedbackEl.textContent = "";
+                if (secuenciaSeleccionada.length === 5) { verificarSecuencia(); }
+            }
+        }
+        function verificarSecuencia() {
+            const esCorrecta = JSON.stringify(secuenciaSeleccionada) === JSON.stringify(secuenciaCorrecta);
+            setTimeout(() => {
+                if (esCorrecta) { mostrarPantalla('pantalla-3'); } 
+                else {
+                    feedbackEl.textContent = "SECUENCIA INCORRECTA. ACCESO DENEGADO. INTÉNTELO DE NUEVO.";
+                    resetAltea();
+                }
+            }, 500);
+        }
+        function resetAltea() {
+            secuenciaSeleccionada = [];
+            letterBoxes.forEach(box => box.classList.remove('selected'));
+        }
+        
+        // --- NUEVAS FUNCIONES PARA EL OVERLAY FINAL ---
+        const invitacionOverlay = document.getElementById('invitacion-overlay');
+
+        function mostrarInvitacionOverlay() {
+            invitacionOverlay.style.display = 'flex'; // Primero la hacemos visible pero transparente
+            setTimeout(() => {
+                invitacionOverlay.classList.add('activa'); // Luego activamos la opacidad para la transición
+            }, 10); // Un pequeño retardo para que la transición funcione
+        }
+
+        function cerrarInvitacionOverlay() {
+            invitacionOverlay.classList.remove('activa'); // Quitamos la opacidad
+            setTimeout(() => {
+                invitacionOverlay.style.display = 'none'; // La ocultamos del todo cuando termina la transición
+            }, 400); // 400ms es la duración de la transición en el CSS
+        }
+    </script>
+</body>
+</html>
