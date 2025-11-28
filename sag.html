@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAG Editor v4.0</title>
+    <title>SAG Editor v4.1</title>
     <!-- Quill CSS -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <!-- Google Fonts (9 fuentes en total) -->
@@ -319,11 +319,11 @@
                 container: [
                     [{ 'font': ['inter', 'lora', 'roboto', 'comic', 'montserrat', 'merriweather', 'oswald', 'playfair', 'dancing'] }],
                     [{ 'header': [1, 2, 3, false] }],
-                    [{ 'align': [] }], /* ALINEACIÓN AÑADIDA AQUÍ */
+                    [{ 'align': [] }],
                     ['bold', 'italic', 'underline', 'strike'],
                     [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                     [{ 'color': [] }, { 'background': [] }],
-                    ['image', 'code-block', 'emoji', 'divider'], /* DIVIDER AÑADIDO AQUÍ */
+                    ['image', 'code-block', 'emoji', 'divider'],
                     ['clean']
                 ],
                 handlers: {
@@ -367,8 +367,17 @@
         }
     });
 
-    // --- Detección Robusta: Pegado vs Escritura ---
+    // --- Detección Robusta: Pegado vs Escritura (OPTIMIZADO PARA ANDROID) ---
     let isPasting = false;
+
+    // Listener especial 'beforeinput' para móviles modernos
+    quill.root.addEventListener('beforeinput', (e) => {
+        if (e.inputType === 'insertFromPaste' || e.inputType === 'insertFromDrop') {
+            isPasting = true;
+            // Extendemos el tiempo porque los móviles pueden tener lag
+            setTimeout(() => isPasting = false, 350); 
+        }
+    });
 
     ['paste', 'drop'].forEach(evt => {
         quill.root.addEventListener(evt, () => {
@@ -390,18 +399,28 @@
             });
 
             if (hasInsertion) {
+                // REGLA DE ORO ANDROID: 
+                // Si la longitud insertada > 1, es pegado SIEMPRE.
+                // Ignoramos si isPasting es false (porque en Android a veces falla).
                 const likelyPasted = isPasting || insertedText.length > 1;
 
-                if (!likelyPasted) {
-                    let index = 0;
-                    delta.ops.forEach(op => {
-                        if (op.retain) index += op.retain;
-                        if (op.insert && typeof op.insert === 'string') {
-                            quill.formatText(index, op.insert.length, 'cheat', false, 'api');
-                            index += op.insert.length;
+                let index = 0;
+                delta.ops.forEach(op => {
+                    if (op.retain) index += op.retain;
+                    if (op.insert && typeof op.insert === 'string') {
+                        const len = op.insert.length;
+                        if (!likelyPasted) {
+                            // Escritura humana (1 char y no evento paste) -> Limpiar marca
+                            quill.formatText(index, len, 'cheat', false, 'api');
+                        } else {
+                            // Es un bloque de texto -> FORZAMOS LA MARCA
+                            // Esto asegura que aunque el clipboard matcher falle en Android,
+                            // la longitud del texto lo delate.
+                            quill.formatText(index, len, 'cheat', true, 'api');
                         }
-                    });
-                }
+                        index += len;
+                    }
+                });
             }
         }
     });
@@ -475,7 +494,7 @@
         const dateStr = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
         const filename = `${author} - ${title} - ${dateStr}.sag`;
         const content = quill.getContents();
-        const data = { version: '4.0', meta: { author, title, date: dateStr }, content: content };
+        const data = { version: '4.1', meta: { author, title, date: dateStr }, content: content };
         const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
@@ -537,7 +556,7 @@
             const pokeMap = {
                 "cGlrYWNodQ==": "pikachu",
                 "Y2hhcm1hbmRlcg==": "charmander",
-                "YnVsYmFzYXVy": "bulbasaur", // CORREGIDO
+                "YnVsYmFzYXVy": "bulbasaur",
                 "ZWV2ZWU=": "eevee",
                 "c25vcmxheA==": "snorlax"
             };
